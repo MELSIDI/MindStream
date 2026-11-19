@@ -94,7 +94,7 @@ export interface CodingSessionPlan {
   goal: string;
   isDemo: boolean;
   language: 'fr' | 'en';
-  /** Relative subdirectory inside workspace (e.g. 'codepace-demo' or ''). */
+  /** Relative subdirectory inside workspace (e.g. 'mindstream-demo' or ''). */
   rootSubdir: string;
   research: ResearchReport;
   steps: SessionStep[];

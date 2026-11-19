@@ -6,7 +6,7 @@ const WIN32_CSHARP_WORKER = [
   'using System.Collections.Concurrent;',
   'using System.Speech.Synthesis;',
   'using System.Text;',
-  'public class CodePaceTTS {',
+  'public class MindStreamTTS {',
   '  public static void Run() {',
   '    Console.InputEncoding = Encoding.UTF8;',
   '    Console.OutputEncoding = Encoding.UTF8;',
@@ -192,7 +192,7 @@ export class NativeTTSFallback {
     const psCmd =
       `$src = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${encodedScript}')); ` +
       'Add-Type -ReferencedAssemblies System.Speech -TypeDefinition $src; ' +
-      '[CodePaceTTS]::Run()';
+      '[MindStreamTTS]::Run()';
 
     this.winWorkerReadyPromise = new Promise<boolean>((resolveReady) => {
       let readySettled = false;

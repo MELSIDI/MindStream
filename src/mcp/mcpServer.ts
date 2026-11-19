@@ -17,9 +17,9 @@ interface JsonRpcRequest {
 
 const MCP_TOOLS = [
   {
-    name: 'codepace_start_session',
+    name: 'mindstream_start_session',
     description:
-      'Initialize a synchronized CodePace pair-programming session in the IDE after doing research. Presents findings briefly and starts progressive voice-explained coding.',
+      'Initialize a synchronized MindStream pair-programming session in the IDE after doing research. Presents findings briefly and starts progressive voice-explained coding.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -62,7 +62,7 @@ const MCP_TOOLS = [
     },
   },
   {
-    name: 'codepace_write_block',
+    name: 'mindstream_write_block',
     description:
       'Write a logical code block progressively into the editor while narrating WHY it is written, why its variables/parameters exist, and tracking the active line. Supports skeleton-first editing via `inside-container` (`class Foo`, `<body>`) and `insert-before`.',
     inputSchema: {
@@ -128,7 +128,7 @@ const MCP_TOOLS = [
     },
   },
   {
-    name: 'codepace_checkpoint',
+    name: 'mindstream_checkpoint',
     description:
       'Ask the developer a quick interactive micro-validation question on an architectural choice before implementing a critical decision.',
     inputSchema: {
@@ -160,9 +160,9 @@ const MCP_TOOLS = [
     },
   },
   {
-    name: 'codepace_speak',
+    name: 'mindstream_speak',
     description:
-      'Speak a contextual explanation or barge-in answer aloud through CodePace without writing code.',
+      'Speak a contextual explanation or barge-in answer aloud through MindStream without writing code.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -174,9 +174,9 @@ const MCP_TOOLS = [
     },
   },
   {
-    name: 'codepace_control',
+    name: 'mindstream_control',
     description:
-      'Adjust CodePace playback controls programmatically from chat commands (speed, pause, resume, skip, stop, mute, file_fast_pause, status).',
+      'Adjust MindStream playback controls programmatically from chat commands (speed, pause, resume, skip, stop, mute, file_fast_pause, status).',
     inputSchema: {
       type: 'object',
       properties: {
@@ -205,9 +205,9 @@ const MCP_TOOLS = [
     },
   },
   {
-    name: 'codepace_finish_session',
+    name: 'mindstream_finish_session',
     description:
-      'Complete the CodePace pair-programming session cleanly and clear temporary editor highlights.',
+      'Complete the MindStream pair-programming session cleanly and clear temporary editor highlights.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -220,7 +220,7 @@ const MCP_TOOLS = [
   },
 ];
 
-export class CodePaceMcpServer {
+export class MindStreamMcpServer {
   private readonly bridgeClient = new BridgeClient();
   private readonly standalone = new StandaloneFallback();
   private useContentLength = false;
@@ -323,7 +323,7 @@ export class CodePaceMcpServer {
             tools: {},
           },
           serverInfo: {
-            name: 'codepace-driver',
+            name: 'mindstream-driver',
             version: '0.2.1',
           },
         };
@@ -374,7 +374,7 @@ export class CodePaceMcpServer {
     const workspaceRoot = this.resolveTargetWorkspace(args);
 
     switch (name) {
-      case 'codepace_start_session': {
+      case 'mindstream_start_session': {
         const params = args as unknown as StartLiveSessionParams;
         this.activeWorkspaceRoot = workspaceRoot;
         this.pinnedBridgeId = undefined;
@@ -392,7 +392,7 @@ export class CodePaceMcpServer {
         return this.standalone.startSession(params);
       }
 
-      case 'codepace_write_block': {
+      case 'mindstream_write_block': {
         const params = args as unknown as WriteLiveBlockParams;
         if (workspaceRoot && !this.activeWorkspaceRoot) {
           this.activeWorkspaceRoot = workspaceRoot;
@@ -411,7 +411,7 @@ export class CodePaceMcpServer {
         return this.standalone.writeBlock(params);
       }
 
-      case 'codepace_checkpoint': {
+      case 'mindstream_checkpoint': {
         const params = args as unknown as LiveCheckpointParams;
         const res = await this.bridgeClient.callBridge(
           '/session/checkpoint',
@@ -427,7 +427,7 @@ export class CodePaceMcpServer {
         return this.standalone.checkpoint(params);
       }
 
-      case 'codepace_speak': {
+      case 'mindstream_speak': {
         const res = await this.bridgeClient.callBridge(
           '/session/speak',
           'POST',
@@ -445,7 +445,7 @@ export class CodePaceMcpServer {
         );
       }
 
-      case 'codepace_control': {
+      case 'mindstream_control': {
         const res = await this.bridgeClient.callBridge(
           '/session/control',
           'POST',
@@ -463,7 +463,7 @@ export class CodePaceMcpServer {
         });
       }
 
-      case 'codepace_finish_session': {
+      case 'mindstream_finish_session': {
         const res = await this.bridgeClient.callBridge(
           '/session/finish',
           'POST',
@@ -481,7 +481,7 @@ export class CodePaceMcpServer {
       }
 
       default:
-        throw new Error(`Unknown CodePace MCP tool: ${name}`);
+        throw new Error(`Unknown MindStream MCP tool: ${name}`);
     }
   }
 
@@ -496,4 +496,4 @@ export class CodePaceMcpServer {
   }
 }
 
-new CodePaceMcpServer().start();
+new MindStreamMcpServer().start();

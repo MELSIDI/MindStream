@@ -19,7 +19,7 @@ function sleep(ms: number): Promise<void> {
 }
 
 /**
- * Headless / CLI fallback when no IDE CodePace Extension bridge is active.
+ * Headless / CLI fallback when no IDE MindStream Extension bridge is active.
  * Writes files progressively to disk and narrates via OS native TTS.
  */
 export class StandaloneFallback {

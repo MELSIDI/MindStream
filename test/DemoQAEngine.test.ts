@@ -104,7 +104,7 @@ describe('DemoSessionBuilder & DemoQAEngine', () => {
 
     for (const combo of variantCombos) {
       const files = assembleDemoFiles(plan, combo);
-      const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'codepace-demo-verify-'));
+      const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mindstream-demo-verify-'));
 
       try {
         for (const [relPath, content] of files.entries()) {

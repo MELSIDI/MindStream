@@ -273,8 +273,8 @@ function inferLanguageId(filePath: string): string {
   return 'plaintext';
 }
 
-export const SECRET_GEMINI_API_KEY = 'codepace.geminiApiKey';
-export const SECRET_OPENAI_API_KEY = 'codepace.openaiApiKey';
+export const SECRET_GEMINI_API_KEY = 'mindstream.geminiApiKey';
+export const SECRET_OPENAI_API_KEY = 'mindstream.openaiApiKey';
 
 export type AIProviderChoice = 'auto' | 'gemini' | 'openai-compatible' | 'vscode-lm' | 'demo';
 

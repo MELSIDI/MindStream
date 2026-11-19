@@ -1,15 +1,15 @@
 {
-  "name": "codepace",
-  "displayName": "CodePace — Pair-Programming Synchronisé & Vocal",
+  "name": "mindstream",
+  "displayName": "MindStream — Pair-Programming Synchronisé & Vocal",
   "version": "0.2.1",
-  "description": "Transforme l'agent IA en binôme de Pair-Programming humain directement depuis le chat (/CodePace) : écriture progressive synchronisée à la voix, variateur de vitesse, mode Auto intelligent, checkpoints et barge-in.",
+  "description": "Transforme l'agent IA en binôme de Pair-Programming humain directement depuis le chat (/MindStream) : écriture progressive synchronisée à la voix, variateur de vitesse, mode Auto intelligent, checkpoints et barge-in.",
   "logo": "assets/logo.svg",
   "suggestedPrompts": [
-    "Implémente cette fonctionnalité étape par étape avec explications /CodePace",
-    "Code uniquement le service principal en mode rapide puis pause /CodePace",
-    "Passe la vitesse CodePace en mode auto et continue /CodePace"
+    "Implémente cette fonctionnalité étape par étape avec explications /MindStream",
+    "Code uniquement le service principal en mode rapide puis pause /MindStream",
+    "Passe la vitesse MindStream en mode auto et continue /MindStream"
   ],
   "author": {
-    "name": "CodePace"
+    "name": "MindStream"
   }
 }

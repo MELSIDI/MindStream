@@ -19,7 +19,7 @@ function syncStaticAssets() {
 }
 
 const assetSyncPlugin = {
-  name: 'sync-codepace-assets',
+  name: 'sync-mindstream-assets',
   setup(build) {
     build.onEnd(() => {
       syncStaticAssets();
@@ -69,13 +69,13 @@ async function run() {
     fs.watch(path.resolve('src/webview/styles.css'), () => {
       try {
         syncStaticAssets();
-        console.log('[CodePace] Synced updated webview.css');
+        console.log('[MindStream] Synced updated webview.css');
       } catch (err) {
-        console.error('[CodePace] Failed syncing assets:', err);
+        console.error('[MindStream] Failed syncing assets:', err);
       }
     });
     await Promise.all([extensionCtx.watch(), webviewCtx.watch(), mcpCtx.watch()]);
-    console.log('[CodePace] Watching extension, webview, and MCP server bundles...');
+    console.log('[MindStream] Watching extension, webview, and MCP server bundles...');
   } else {
     await Promise.all([extensionCtx.rebuild(), webviewCtx.rebuild(), mcpCtx.rebuild()]);
     syncStaticAssets();

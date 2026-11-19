@@ -14,12 +14,12 @@ function buildFrenchDemoPlan(): CodingSessionPlan {
     goal: 'Construire un mini-moteur Pomodoro typé avec gestionnaire de tâches réactif (FocusFlow)',
     isDemo: true,
     language: 'fr',
-    rootSubdir: 'codepace-demo',
+    rootSubdir: 'mindstream-demo',
     research: {
       summary:
         "Avant d'écrire la moindre ligne, j'ai structuré l'architecture de FocusFlow autour de 3 fichiers découpés par responsabilité pour garder un code lisible, testable et sans dette cognitive.",
       findings: [
-        'Aucun conflit détecté : isolation propre dans le dossier `codepace-demo/`.',
+        'Aucun conflit détecté : isolation propre dans le dossier `mindstream-demo/`.',
         'TypeScript strict avec syntaxe érasable : zéro `enum` lourd, uniquement des types littéraux rapides à lire.',
         'Séparation nette entre les contrats (`types.ts`), le store de tâches (`taskStore.ts`) et le chronomètre (`pomodoroEngine.ts`).',
       ],
@@ -51,7 +51,7 @@ function buildFrenchDemoPlan(): CodingSessionPlan {
               '',
             ].join('\n'),
             narration:
-              "Je commence par déclarer trois types littéraux simples pour les priorités, le statut d'une tâche et les phases du Pomodoro. En mode Auto, CodePace accélère automatiquement sur ce boilerplate évident.",
+              "Je commence par déclarer trois types littéraux simples pour les priorités, le statut d'une tâche et les phases du Pomodoro. En mode Auto, MindStream accélère automatiquement sur ce boilerplate évident.",
             shortCue: 'Déclaration rapide des types union du domaine.',
             rationale:
               'Les unions de chaînes littérales offrent l’autocomplétion TypeScript sans générer de code JavaScript inutile au runtime.',
@@ -648,12 +648,12 @@ function buildEnglishDemoPlan(): CodingSessionPlan {
     goal: 'Build a strongly-typed Pomodoro engine paired with a reactive task store (FocusFlow)',
     isDemo: true,
     language: 'en',
-    rootSubdir: 'codepace-demo',
+    rootSubdir: 'mindstream-demo',
     research: {
       summary:
         'Before writing any code, I organized FocusFlow into cleanly decoupled modules so every responsibility stays transparent and easy to reason about.',
       findings: [
-        'Cleanly isolated inside `codepace-demo/` with zero side effects on existing files.',
+        'Cleanly isolated inside `mindstream-demo/` with zero side effects on existing files.',
         'Erasable TypeScript syntax: lightweight string literal unions instead of runtime enums.',
         'Clear separation between data contracts (`types.ts`), reactive state (`taskStore.ts`), and timer mechanics (`pomodoroEngine.ts`).',
       ],
@@ -685,7 +685,7 @@ function buildEnglishDemoPlan(): CodingSessionPlan {
               '',
             ].join('\n'),
             narration:
-              'I start with three lightweight string literal union types for task priority, status, and Pomodoro phases. In Smart Auto mode, CodePace speeds cleanly over straightforward boilerplate like this.',
+              'I start with three lightweight string literal union types for task priority, status, and Pomodoro phases. In Smart Auto mode, MindStream speeds cleanly over straightforward boilerplate like this.',
             shortCue: 'Declaring domain union types.',
             rationale:
               'String literal unions preserve full autocomplete with zero runtime overhead.',

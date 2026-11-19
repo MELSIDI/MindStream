@@ -18,13 +18,13 @@ import { EditorChoreographer } from './editor/EditorChoreographer';
 import { EditorDecorator } from './editor/EditorDecorator';
 import { PlaybackEngine } from './engine/PlaybackEngine';
 import { CheckpointStep, SessionUIState, SpeedMode } from './types/session';
-import { registerCodePaceChatParticipant } from './ui/ChatParticipant';
+import { registerMindStreamChatParticipant } from './ui/ChatParticipant';
 import { SidebarViewProvider } from './ui/SidebarViewProvider';
 import { StatusBarController } from './ui/StatusBarController';
 import { TTSProviderSetting, VoiceCoordinator } from './voice/VoiceCoordinator';
 
 function readConfig() {
-  const cfg = vscode.workspace.getConfiguration('codepace');
+  const cfg = vscode.workspace.getConfiguration('mindstream');
   return {
     language: (cfg.get<'fr' | 'en'>('language') ?? 'fr') as 'fr' | 'en',
     defaultSpeed: (cfg.get<SpeedMode>('defaultSpeed') ?? '1x') as SpeedMode,
@@ -82,7 +82,7 @@ export function activate(context: vscode.ExtensionContext): void {
     language: initialCfg.language,
     defaultSpeed: initialCfg.defaultSpeed,
     voiceRateMultiplier: initialCfg.voiceRateMultiplier,
-    providerLabel: 'Chat /CodePace',
+    providerLabel: 'Chat /MindStream',
   });
 
   const bridgeServer = new BridgeServer(liveDriver, () =>
@@ -109,7 +109,7 @@ export function activate(context: vscode.ExtensionContext): void {
       vscode.QuickPickItem & { optionId?: string; isCustom?: boolean }
     >();
     activeCheckpointQuickPick = qp;
-    qp.title = `CodePace · ${step.title}`;
+    qp.title = `MindStream · ${step.title}`;
     qp.placeholder = step.question;
     qp.ignoreFocusOut = true;
 
@@ -188,14 +188,14 @@ export function activate(context: vscode.ExtensionContext): void {
       language: cfg.language,
       defaultSpeed: cfg.defaultSpeed,
       voiceRateMultiplier: cfg.voiceRateMultiplier,
-      providerLabel: 'Chat /CodePace',
+      providerLabel: 'Chat /MindStream',
     });
   };
 
   const installPluginBundle = async (silent = false) => {
     const isFr = readConfig().language === 'fr';
     const srcDir = path.join(context.extensionPath, 'agent-plugin');
-    const destDir = path.join(os.homedir(), '.gemini', 'config', 'plugins', 'codepace');
+    const destDir = path.join(os.homedir(), '.gemini', 'config', 'plugins', 'mindstream');
 
     try {
       await fs.access(srcDir);
@@ -203,14 +203,14 @@ export function activate(context: vscode.ExtensionContext): void {
       if (!silent) {
         void vscode.window.showInformationMessage(
           isFr
-            ? `Plugin /CodePace installé dans ${destDir}. Tapez /CodePace dans votre chat Antigravity (ou redémarrez une nouvelle conversation si déjà ouverte).`
-            : `/CodePace plugin installed to ${destDir}. Type /CodePace in Antigravity chat.`,
+            ? `Plugin /MindStream installé dans ${destDir}. Tapez /MindStream dans votre chat Antigravity (ou redémarrez une nouvelle conversation si déjà ouverte).`
+            : `/MindStream plugin installed to ${destDir}. Type /MindStream in Antigravity chat.`,
         );
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       if (!silent) {
-        void vscode.window.showErrorMessage(`CodePace plugin install error: ${msg}`);
+        void vscode.window.showErrorMessage(`MindStream plugin install error: ${msg}`);
       }
     }
   };
@@ -262,7 +262,7 @@ export function activate(context: vscode.ExtensionContext): void {
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       engine.stop();
-      void vscode.window.showErrorMessage(`CodePace AI Error: ${message}`);
+      void vscode.window.showErrorMessage(`MindStream AI Error: ${message}`);
     }
   };
 
@@ -274,8 +274,8 @@ export function activate(context: vscode.ExtensionContext): void {
           id: 'gemini',
           label: '$(sparkle) Google Gemini API Key',
           description: isFr
-            ? 'Optionnel — uniquement si vous n’utilisez pas /CodePace depuis le chat'
-            : 'Optional — only needed outside /CodePace chat integration',
+            ? 'Optionnel — uniquement si vous n’utilisez pas /MindStream depuis le chat'
+            : 'Optional — only needed outside /MindStream chat integration',
         },
         {
           id: 'openai',
@@ -354,8 +354,8 @@ export function activate(context: vscode.ExtensionContext): void {
     if (state.playbackState === 'idle') {
       void vscode.window.showInformationMessage(
         isFr
-          ? 'Aucune session active. Tapez /CodePace dans le chat ou lancez la Démo.'
-          : 'No active session. Type /CodePace in chat or launch the Demo.',
+          ? 'Aucune session active. Tapez /MindStream dans le chat ou lancez la Démo.'
+          : 'No active session. Type /MindStream in chat or launch the Demo.',
       );
       return;
     }
@@ -496,7 +496,7 @@ export function activate(context: vscode.ExtensionContext): void {
     onInstallPlugin: () => installPluginBundle(false),
     onConfigureApiKey: configureApiKey,
     onOpenSettings: () => {
-      void vscode.commands.executeCommand('workbench.action.openSettings', 'codepace');
+      void vscode.commands.executeCommand('workbench.action.openSettings', 'mindstream');
     },
     getLatestState: getCurrentUIState,
   });
@@ -535,7 +535,7 @@ export function activate(context: vscode.ExtensionContext): void {
     broadcastState();
   });
 
-  const chatParticipantDisposable = registerCodePaceChatParticipant(
+  const chatParticipantDisposable = registerMindStreamChatParticipant(
     context.extensionUri,
     liveDriver,
     {
@@ -586,14 +586,14 @@ export function activate(context: vscode.ExtensionContext): void {
       void bridgeServer.setFocused(windowState.focused);
     }),
     vscode.workspace.onDidChangeConfiguration((ev) => {
-      if (ev.affectsConfiguration('codepace')) {
+      if (ev.affectsConfiguration('mindstream')) {
         void syncProviderSettings();
       }
     }),
-    vscode.commands.registerCommand('codepace.openStudio', () =>
+    vscode.commands.registerCommand('mindstream.openStudio', () =>
       sidebarProvider.reveal(false),
     ),
-    vscode.commands.registerCommand('codepace.quickMenu', async () => {
+    vscode.commands.registerCommand('mindstream.quickMenu', async () => {
       const isFr = readConfig().language === 'fr';
       const choice = await vscode.window.showQuickPick(
         [
@@ -609,8 +609,8 @@ export function activate(context: vscode.ExtensionContext): void {
           {
             id: 'hud',
             label: isFr
-              ? '$(layout-sidebar-left) Ouvrir le Mini-HUD CodePace'
-              : '$(layout-sidebar-left) Open CodePace Mini-HUD',
+              ? '$(layout-sidebar-left) Ouvrir le Mini-HUD MindStream'
+              : '$(layout-sidebar-left) Open MindStream Mini-HUD',
             description: isFr
               ? 'Contrôles compacts et choix de voix'
               : 'Compact controls and voice picker',
@@ -618,22 +618,22 @@ export function activate(context: vscode.ExtensionContext): void {
           {
             id: 'plugin',
             label: isFr
-              ? '$(plug) Installer le plugin /CodePace (Antigravity & MCP)'
-              : '$(plug) Install /CodePace Plugin (Antigravity & MCP)',
+              ? '$(plug) Installer le plugin /MindStream (Antigravity & MCP)'
+              : '$(plug) Install /MindStream Plugin (Antigravity & MCP)',
             description: isFr
-              ? 'Active /CodePace dans votre chat existant'
-              : 'Enables /CodePace directly inside your existing chat',
+              ? 'Active /MindStream dans votre chat existant'
+              : 'Enables /MindStream directly inside your existing chat',
           },
           {
             id: 'info',
-            label: '$(comment) Astuce : utilisez /CodePace dans le chat',
+            label: '$(comment) Astuce : utilisez /MindStream dans le chat',
             description: isFr
-              ? 'Ex: « Implémente le projet ... /CodePace »'
-              : 'E.g.: "Implement project ... /CodePace"',
+              ? 'Ex: « Implémente le projet ... /MindStream »'
+              : 'E.g.: "Implement project ... /MindStream"',
           },
         ],
         {
-          placeHolder: 'CodePace',
+          placeHolder: 'MindStream',
         },
       );
       if (!choice) return;
@@ -643,30 +643,30 @@ export function activate(context: vscode.ExtensionContext): void {
       else {
         void vscode.window.showInformationMessage(
           isFr
-            ? 'Ajoutez simplement /CodePace à la fin de n’importe quel prompt dans votre chat Antigravity ou VS Code !'
-            : 'Simply append /CodePace to any prompt in your Antigravity or VS Code chat!',
+            ? 'Ajoutez simplement /MindStream à la fin de n’importe quel prompt dans votre chat Antigravity ou VS Code !'
+            : 'Simply append /MindStream to any prompt in your Antigravity or VS Code chat!',
         );
       }
     }),
-    vscode.commands.registerCommand('codepace.startDemo', startDemoSession),
-    vscode.commands.registerCommand('codepace.startSession', async () => {
+    vscode.commands.registerCommand('mindstream.startDemo', startDemoSession),
+    vscode.commands.registerCommand('mindstream.startSession', async () => {
       const isFr = readConfig().language === 'fr';
       const prompt = await vscode.window.showInputBox({
         prompt: isFr
-          ? 'Que voulez-vous coder avec CodePace ? (Astuce : tapez /CodePace directement dans le chat !)'
-          : 'What do you want to code with CodePace? (Tip: just type /CodePace in chat!)',
+          ? 'Que voulez-vous coder avec MindStream ? (Astuce : tapez /MindStream directement dans le chat !)'
+          : 'What do you want to code with MindStream? (Tip: just type /MindStream in chat!)',
         ignoreFocusOut: true,
       });
       if (prompt) {
         await startLiveSessionLegacy(prompt);
       }
     }),
-    vscode.commands.registerCommand('codepace.togglePlayPause', togglePlayPauseUnified),
-    vscode.commands.registerCommand('codepace.cycleSpeed', () => {
+    vscode.commands.registerCommand('mindstream.togglePlayPause', togglePlayPauseUnified),
+    vscode.commands.registerCommand('mindstream.cycleSpeed', () => {
       const next = cycleSpeedUnified();
-      void vscode.window.setStatusBarMessage(`CodePace: ${next}`, 1600);
+      void vscode.window.setStatusBarMessage(`MindStream: ${next}`, 1600);
     }),
-    vscode.commands.registerCommand('codepace.setSpeed', async () => {
+    vscode.commands.registerCommand('mindstream.setSpeed', async () => {
       const isFr = readConfig().language === 'fr';
       const picked = await vscode.window.showQuickPick<
         vscode.QuickPickItem & { value: SpeedMode }
@@ -684,22 +684,22 @@ export function activate(context: vscode.ExtensionContext): void {
               : 'Fast on boilerplate, thoughtful on core logic',
           },
         ],
-        { placeHolder: 'CodePace Speed' },
+        { placeHolder: 'MindStream Speed' },
       );
       if (picked) {
         setSpeedUnified(picked.value);
       }
     }),
-    vscode.commands.registerCommand('codepace.bargeIn', triggerBargeInFromCommand),
+    vscode.commands.registerCommand('mindstream.bargeIn', triggerBargeInFromCommand),
     vscode.commands.registerCommand(
-      'codepace.implementFileAndPause',
+      'mindstream.implementFileAndPause',
       (uri?: vscode.Uri) => handleImplementFileAndPause(uri),
     ),
-    vscode.commands.registerCommand('codepace.skipBlock', skipBlockUnified),
-    vscode.commands.registerCommand('codepace.stopSession', stopSessionUnified),
-    vscode.commands.registerCommand('codepace.configureApiKey', configureApiKey),
-    vscode.commands.registerCommand('codepace.toggleMute', toggleMuteUnified),
-    vscode.commands.registerCommand('codepace.installAntigravityPlugin', () =>
+    vscode.commands.registerCommand('mindstream.skipBlock', skipBlockUnified),
+    vscode.commands.registerCommand('mindstream.stopSession', stopSessionUnified),
+    vscode.commands.registerCommand('mindstream.configureApiKey', configureApiKey),
+    vscode.commands.registerCommand('mindstream.toggleMute', toggleMuteUnified),
+    vscode.commands.registerCommand('mindstream.installAntigravityPlugin', () =>
       installPluginBundle(false),
     ),
   );
@@ -709,7 +709,7 @@ export function activate(context: vscode.ExtensionContext): void {
     .start()
     .then(() => bridgeServer.setFocused(vscode.window.state.focused))
     .catch((err) => {
-      console.error('[CodePace] BridgeServer failed to start:', err);
+      console.error('[MindStream] BridgeServer failed to start:', err);
     });
 }
 

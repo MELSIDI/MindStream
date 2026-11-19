@@ -38,7 +38,7 @@ interface ChatNamespaceLike {
 
 const VALID_SPEEDS = new Set<SpeedMode>(['0.5x', '1x', '2x', '3x', 'auto']);
 
-export function registerCodePaceChatParticipant(
+export function registerMindStreamChatParticipant(
   extensionUri: vscode.Uri,
   liveDriver: LiveAgentSessionDriver,
   handlers: {
@@ -60,7 +60,7 @@ export function registerCodePaceChatParticipant(
   const analyzer = new WorkspaceAnalyzer();
 
   const participant = chatNs.createChatParticipant(
-    'codepace.pair',
+    'mindstream.pair',
     async (request, _ctx, stream, token) => {
       const lang = handlers.getLanguage();
       const cmd = request.command?.toLowerCase();
@@ -78,7 +78,7 @@ export function registerCodePaceChatParticipant(
 
       if (cmd === 'pause') {
         handlers.onPause();
-        stream.markdown(lang === 'fr' ? '⏸ CodePace mis en pause.' : '⏸ CodePace paused.');
+        stream.markdown(lang === 'fr' ? '⏸ MindStream mis en pause.' : '⏸ MindStream paused.');
         return;
       }
 
@@ -104,7 +104,7 @@ export function registerCodePaceChatParticipant(
         const arg = promptTrimmed.toLowerCase() as SpeedMode;
         if (VALID_SPEEDS.has(arg)) {
           handlers.onSetSpeed(arg);
-          stream.markdown(`🎚️ CodePace: **${arg}**`);
+          stream.markdown(`🎚️ MindStream: **${arg}**`);
         } else {
           stream.markdown(
             lang === 'fr'
@@ -128,8 +128,8 @@ export function registerCodePaceChatParticipant(
       if (!promptTrimmed) {
         stream.markdown(
           lang === 'fr'
-            ? 'Décrivez ce que vous voulez coder avec `@codepace` ou tapez `/CodePace` dans votre chat.'
-            : 'Describe what to build with `@codepace` or include `/CodePace` in your chat prompt.',
+            ? 'Décrivez ce que vous voulez coder avec `@mindstream` ou tapez `/MindStream` dans votre chat.'
+            : 'Describe what to build with `@mindstream` or include `/MindStream` in your chat prompt.',
         );
         return;
       }
@@ -137,16 +137,16 @@ export function registerCodePaceChatParticipant(
       if (!request.model) {
         stream.markdown(
           lang === 'fr'
-            ? 'Aucun modèle de chat actif fourni par l’hôte. Utilisez directement `/CodePace` dans Antigravity ou configurez le serveur MCP `codepace-driver`.'
-            : 'No host chat model provided. Use `/CodePace` in Antigravity or connect the `codepace-driver` MCP server.',
+            ? 'Aucun modèle de chat actif fourni par l’hôte. Utilisez directement `/MindStream` dans Antigravity ou configurez le serveur MCP `mindstream-driver`.'
+            : 'No host chat model provided. Use `/MindStream` in Antigravity or connect the `mindstream-driver` MCP server.',
         );
         return;
       }
 
       stream.markdown(
         lang === 'fr'
-          ? '🔍 Analyse du projet et préparation du plan CodePace…\n\n'
-          : '🔍 Researching workspace and building CodePace plan…\n\n',
+          ? '🔍 Analyse du projet et préparation du plan MindStream…\n\n'
+          : '🔍 Researching workspace and building MindStream plan…\n\n',
       );
 
       const wsCtx = await analyzer.analyze(promptTrimmed);
@@ -247,7 +247,7 @@ export function registerCodePaceChatParticipant(
         lang === 'fr' ? 'Implémentation terminée.' : 'Implementation complete.',
       );
       stream.markdown(
-        lang === 'fr' ? '\n✅ Session CodePace terminée.' : '\n✅ CodePace session finished.',
+        lang === 'fr' ? '\n✅ Session MindStream terminée.' : '\n✅ MindStream session finished.',
       );
     },
   );

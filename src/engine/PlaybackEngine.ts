@@ -1112,13 +1112,13 @@ export class PlaybackEngine {
         ? {
             paused: '⏸ En pause — relisez tranquillement',
             interrupted: '✋ Interrompu — posez votre question',
-            checkpoint: '◆ Validation demandée dans CodePace Studio',
+            checkpoint: '◆ Validation demandée dans MindStream Studio',
             completed: '✅ Session terminée',
           }
         : {
             paused: '⏸ Paused — inspect calmly',
             interrupted: '✋ Interrupted — ask your question',
-            checkpoint: '◆ Decision requested in CodePace Studio',
+            checkpoint: '◆ Decision requested in MindStream Studio',
             completed: '✅ Session complete',
           };
 

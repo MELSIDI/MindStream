@@ -24,27 +24,27 @@ async function main() {
   try {
     await fs.access(mcpBundle);
   } catch {
-    console.error('[CodePace] Error: agent-plugin/mcp/mcp-server.js not found. Run `npm run build` first.');
+    console.error('[MindStream] Error: agent-plugin/mcp/mcp-server.js not found. Run `npm run build` first.');
     process.exit(1);
   }
 
-  const destPluginDir = path.join(os.homedir(), '.gemini', 'config', 'plugins', 'codepace');
+  const destPluginDir = path.join(os.homedir(), '.gemini', 'config', 'plugins', 'mindstream');
   await copyDirRecursive(srcPluginDir, destPluginDir);
 
-  console.log(`[CodePace] Installed global Antigravity plugin to:\n  ${destPluginDir}`);
-  console.log('\n[CodePace] Installed files:');
+  console.log(`[MindStream] Installed global Antigravity plugin to:\n  ${destPluginDir}`);
+  console.log('\n[MindStream] Installed files:');
   console.log('  - plugin.json');
-  console.log('  - mcp_config.json (registers stdio MCP server `codepace-driver`)');
+  console.log('  - mcp_config.json (registers stdio MCP server `mindstream-driver`)');
   console.log('  - mcp/mcp-server.js');
-  console.log('  - rules/AGENTS.md (always-on `/CodePace` trigger)');
-  console.log('  - skills/codepace/SKILL.md');
+  console.log('  - rules/AGENTS.md (always-on `/MindStream` trigger)');
+  console.log('  - skills/mindstream/SKILL.md');
   console.log('  - assets/logo.svg');
-  console.log('\n[CodePace] Optional VS Code Copilot MCP snippet (.vscode/mcp.json):');
+  console.log('\n[MindStream] Optional VS Code Copilot MCP snippet (.vscode/mcp.json):');
   console.log(
     JSON.stringify(
       {
         servers: {
-          'codepace-driver': {
+          'mindstream-driver': {
             type: 'stdio',
             command: 'node',
             args: [path.join(destPluginDir, 'mcp', 'mcp-server.js')],
@@ -58,6 +58,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error('[CodePace] Failed installing plugin:', err);
+  console.error('[MindStream] Failed installing plugin:', err);
   process.exit(1);
 });

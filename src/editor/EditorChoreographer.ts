@@ -60,7 +60,7 @@ export class EditorChoreographer implements IEditorAdapter, vscode.Disposable {
       return vscode.Uri.joinPath(workspaceFolder.uri, ...rootSegments, ...cleanSegments);
     }
 
-    const fallbackBase = path.join(os.tmpdir(), 'codepace-workspace', ...rootSegments);
+    const fallbackBase = path.join(os.tmpdir(), 'mindstream-workspace', ...rootSegments);
     return vscode.Uri.file(path.join(fallbackBase, ...cleanSegments));
   }
 
@@ -374,7 +374,7 @@ export class EditorChoreographer implements IEditorAdapter, vscode.Disposable {
   private async ensureEditorForFile(filePath: string): Promise<vscode.TextEditor> {
     const uri = this.sessionUris.get(filePath);
     if (!uri) {
-      throw new Error(`CodePace: No URI registered for file "${filePath}"`);
+      throw new Error(`MindStream: No URI registered for file "${filePath}"`);
     }
 
     const existing = vscode.window.visibleTextEditors.find(

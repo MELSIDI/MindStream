@@ -18,8 +18,8 @@ interface BridgeRegistryFile {
 
 export function getDefaultRegistryPath(): string {
   return (
-    process.env.CODEPACE_REGISTRY_PATH ||
-    path.join(os.homedir(), '.codepace', 'bridges.json')
+    process.env.MINDSTREAM_REGISTRY_PATH ||
+    path.join(os.homedir(), '.mindstream', 'bridges.json')
   );
 }
 

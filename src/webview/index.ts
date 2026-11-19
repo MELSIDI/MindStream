@@ -109,7 +109,7 @@ function updateLiveSpotsOnly(state: SessionUIState): void {
   if (locationEl) {
     locationEl.textContent = state.currentFilePath
       ? `${state.currentFilePath}:${state.currentLineNumber}`
-      : state.sessionTitle || 'CodePace';
+      : state.sessionTitle || 'MindStream';
   }
   const captionTextEl = document.getElementById('cp-caption-text');
   if (captionTextEl) {
@@ -129,7 +129,7 @@ function buildIdleHud(state: SessionUIState): HTMLElement {
   const card = el('div', 'hud-card hud-idle');
 
   const top = el('div', 'hud-row-between');
-  top.appendChild(el('span', 'hud-title', 'CodePace Mini-HUD'));
+  top.appendChild(el('span', 'hud-title', 'MindStream Mini-HUD'));
   top.appendChild(el('span', 'hud-pill', 'Ready'));
   card.appendChild(top);
 
@@ -137,8 +137,8 @@ function buildIdleHud(state: SessionUIState): HTMLElement {
     'p',
     'hud-text',
     isFr
-      ? 'Ajoutez /CodePace à n’importe quel prompt dans votre chat Antigravity ou VS Code (ex : « Implémente le projet ... /CodePace »). Aucune autre fenêtre requise.'
-      : 'Append /CodePace to any prompt in your existing Antigravity or VS Code chat (e.g., "Build feature X /CodePace"). No extra window needed.',
+      ? 'Ajoutez /MindStream à n’importe quel prompt dans votre chat Antigravity ou VS Code (ex : « Implémente le projet ... /MindStream »). Aucune autre fenêtre requise.'
+      : 'Append /MindStream to any prompt in your existing Antigravity or VS Code chat (e.g., "Build feature X /MindStream"). No extra window needed.',
   );
   card.appendChild(hint);
 
@@ -160,7 +160,7 @@ function buildIdleHud(state: SessionUIState): HTMLElement {
   const pluginBtn = el(
     'button',
     'hud-btn hud-btn-ghost',
-    isFr ? '🔌 Plugin /CodePace' : '🔌 /CodePace Plugin',
+    isFr ? '🔌 Plugin /MindStream' : '🔌 /MindStream Plugin',
   );
   pluginBtn.addEventListener('click', () => post({ type: 'installPlugin' }));
 
@@ -198,7 +198,7 @@ function buildPlayerHud(state: SessionUIState): HTMLElement {
     'hud-loc',
     state.currentFilePath
       ? `${state.currentFilePath}:${state.currentLineNumber}`
-      : state.sessionTitle || 'CodePace',
+      : state.sessionTitle || 'MindStream',
   );
   loc.id = 'cp-live-location';
   top.append(left, loc);
@@ -562,7 +562,7 @@ function buildFooterHud(state: SessionUIState): HTMLElement {
   testBtn.addEventListener('click', () => post({ type: 'testVoice' }));
 
   const cfgBtn = el('button', 'hud-icon-btn', '⚙️');
-  cfgBtn.title = isFr ? 'Réglages CodePace' : 'CodePace Settings';
+  cfgBtn.title = isFr ? 'Réglages MindStream' : 'MindStream Settings';
   cfgBtn.addEventListener('click', () => post({ type: 'openSettings' }));
 
   footer.append(select, testBtn, cfgBtn);

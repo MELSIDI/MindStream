@@ -250,7 +250,7 @@ export class LiveAgentSessionDriver {
 
     const lang = params.language ?? this.config.language;
     this.config.language = lang;
-    this.sessionTitle = params.title || 'CodePace Session';
+    this.sessionTitle = params.title || 'MindStream Session';
     this.sessionGoal = params.goal || '';
     this.workspaceRoot = params.workspaceRoot;
     this.research = {
@@ -399,7 +399,7 @@ export class LiveAgentSessionDriver {
           remainingCode: snapshot.remainingCode,
           currentSentence: snapshot.currentSentence,
           instruction:
-            'Answer the user question concisely grounded on the exact line and context above (call codepace_speak if voice is unmuted), wait for their green light if appropriate, then continue with remainingCode using append mode.',
+            'Answer the user question concisely grounded on the exact line and context above (call mindstream_speak if voice is unmuted), wait for their green light if appropriate, then continue with remainingCode using append mode.',
         };
       }
 

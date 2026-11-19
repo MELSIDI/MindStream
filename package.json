@@ -1,9 +1,9 @@
 {
-  "name": "codepace",
-  "displayName": "CodePace — Pair-Programming Synchronisé & Vocal",
+  "name": "mindstream",
+  "displayName": "MindStream — Pair-Programming Synchronisé & Vocal",
   "description": "Transforme l'agent IA en binôme de Pair-Programming humain qui code à votre rythme en expliquant chaque choix à voix haute avec pause, variateur de vitesse, barge-in vocal et mode démo intégré.",
   "version": "0.2.1",
-  "publisher": "codepace",
+  "publisher": "mindstream",
   "license": "MIT",
   "keywords": [
     "ai",
@@ -11,7 +11,7 @@
     "voice",
     "tts",
     "pedagogy",
-    "codepace",
+    "mindstream",
     "gemini",
     "antigravity"
   ],
@@ -32,130 +32,130 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "codepace-studio",
-          "title": "CodePace",
+          "id": "mindstream-studio",
+          "title": "MindStream",
           "icon": "media/icon.svg"
         }
       ]
     },
     "views": {
-      "codepace-studio": [
+      "mindstream-studio": [
         {
           "type": "webview",
-          "id": "codepace.studioView",
-          "name": "CodePace Mini-HUD"
+          "id": "mindstream.studioView",
+          "name": "MindStream Mini-HUD"
         }
       ]
     },
     "commands": [
       {
-        "command": "codepace.openStudio",
-        "title": "CodePace: Ouvrir le Mini-HUD",
+        "command": "mindstream.openStudio",
+        "title": "MindStream: Ouvrir le Mini-HUD",
         "icon": "$(radio-tower)"
       },
       {
-        "command": "codepace.quickMenu",
-        "title": "CodePace: Menu Rapide"
+        "command": "mindstream.quickMenu",
+        "title": "MindStream: Menu Rapide"
       },
       {
-        "command": "codepace.installAntigravityPlugin",
-        "title": "CodePace: Installer le plugin /CodePace (Antigravity & MCP)",
+        "command": "mindstream.installAntigravityPlugin",
+        "title": "MindStream: Installer le plugin /MindStream (Antigravity & MCP)",
         "icon": "$(plug)"
       },
       {
-        "command": "codepace.startDemo",
-        "title": "CodePace: Lancer la Démo Interactive (Sans clé API)",
+        "command": "mindstream.startDemo",
+        "title": "MindStream: Lancer la Démo Interactive (Sans clé API)",
         "icon": "$(play)"
       },
       {
-        "command": "codepace.startSession",
-        "title": "CodePace: Démarrer une session de Pair-Programming",
+        "command": "mindstream.startSession",
+        "title": "MindStream: Démarrer une session de Pair-Programming",
         "icon": "$(sparkle)"
       },
       {
-        "command": "codepace.togglePlayPause",
-        "title": "CodePace: Lecture / Pause",
+        "command": "mindstream.togglePlayPause",
+        "title": "MindStream: Lecture / Pause",
         "icon": "$(debug-pause)"
       },
       {
-        "command": "codepace.cycleSpeed",
-        "title": "CodePace: Changer la vitesse",
+        "command": "mindstream.cycleSpeed",
+        "title": "MindStream: Changer la vitesse",
         "icon": "$(dashboard)"
       },
       {
-        "command": "codepace.setSpeed",
-        "title": "CodePace: Choisir une vitesse précise",
+        "command": "mindstream.setSpeed",
+        "title": "MindStream: Choisir une vitesse précise",
         "icon": "$(dashboard)"
       },
       {
-        "command": "codepace.bargeIn",
-        "title": "CodePace: Interrompre & Poser une question (Barge-in)",
+        "command": "mindstream.bargeIn",
+        "title": "MindStream: Interrompre & Poser une question (Barge-in)",
         "icon": "$(comment-discussion)"
       },
       {
-        "command": "codepace.implementFileAndPause",
-        "title": "CodePace: Implémenter ce fichier rapidement puis pause",
+        "command": "mindstream.implementFileAndPause",
+        "title": "MindStream: Implémenter ce fichier rapidement puis pause",
         "icon": "$(file-code)"
       },
       {
-        "command": "codepace.skipBlock",
-        "title": "CodePace: Passer au bloc suivant",
+        "command": "mindstream.skipBlock",
+        "title": "MindStream: Passer au bloc suivant",
         "icon": "$(debug-step-over)"
       },
       {
-        "command": "codepace.stopSession",
-        "title": "CodePace: Arrêter la session",
+        "command": "mindstream.stopSession",
+        "title": "MindStream: Arrêter la session",
         "icon": "$(debug-stop)"
       },
       {
-        "command": "codepace.configureApiKey",
-        "title": "CodePace: Configurer une clé API (Gemini / OpenAI)",
+        "command": "mindstream.configureApiKey",
+        "title": "MindStream: Configurer une clé API (Gemini / OpenAI)",
         "icon": "$(key)"
       },
       {
-        "command": "codepace.toggleMute",
-        "title": "CodePace: Couper / Activer la voix",
+        "command": "mindstream.toggleMute",
+        "title": "MindStream: Couper / Activer la voix",
         "icon": "$(unmute)"
       }
     ],
     "keybindings": [
       {
-        "command": "codepace.togglePlayPause",
+        "command": "mindstream.togglePlayPause",
         "key": "ctrl+alt+p",
         "mac": "cmd+alt+p",
-        "when": "codepace.hasSession"
+        "when": "mindstream.hasSession"
       },
       {
-        "command": "codepace.cycleSpeed",
+        "command": "mindstream.cycleSpeed",
         "key": "ctrl+alt+s",
         "mac": "cmd+alt+s",
-        "when": "codepace.hasSession"
+        "when": "mindstream.hasSession"
       },
       {
-        "command": "codepace.bargeIn",
+        "command": "mindstream.bargeIn",
         "key": "ctrl+shift+space",
         "mac": "cmd+shift+space",
-        "when": "codepace.hasSession"
+        "when": "mindstream.hasSession"
       },
       {
-        "command": "codepace.implementFileAndPause",
+        "command": "mindstream.implementFileAndPause",
         "key": "ctrl+alt+f",
         "mac": "cmd+alt+f",
-        "when": "codepace.hasSession"
+        "when": "mindstream.hasSession"
       },
       {
-        "command": "codepace.skipBlock",
+        "command": "mindstream.skipBlock",
         "key": "ctrl+alt+n",
         "mac": "cmd+alt+n",
-        "when": "codepace.hasSession"
+        "when": "mindstream.hasSession"
       }
     ],
     "chatParticipants": [
       {
-        "id": "codepace.pair",
-        "fullName": "CodePace",
-        "name": "codepace",
-        "description": "Pair-programming synchronisé à vitesse humaine & voix (/CodePace)",
+        "id": "mindstream.pair",
+        "fullName": "MindStream",
+        "name": "mindstream",
+        "description": "Pair-programming synchronisé à vitesse humaine & voix (/MindStream)",
         "isSticky": true,
         "commands": [
           {
@@ -192,42 +192,42 @@
     "menus": {
       "explorer/context": [
         {
-          "command": "codepace.implementFileAndPause",
+          "command": "mindstream.implementFileAndPause",
           "group": "navigation@99"
         }
       ],
       "editor/context": [
         {
-          "command": "codepace.bargeIn",
-          "when": "codepace.hasSession",
-          "group": "codepace@1"
+          "command": "mindstream.bargeIn",
+          "when": "mindstream.hasSession",
+          "group": "mindstream@1"
         },
         {
-          "command": "codepace.implementFileAndPause",
-          "group": "codepace@2"
+          "command": "mindstream.implementFileAndPause",
+          "group": "mindstream@2"
         }
       ],
       "view/title": [
         {
-          "command": "codepace.startDemo",
-          "when": "view == codepace.studioView",
+          "command": "mindstream.startDemo",
+          "when": "view == mindstream.studioView",
           "group": "navigation"
         }
       ]
     },
     "configuration": {
-      "title": "CodePace",
+      "title": "MindStream",
       "properties": {
-        "codepace.language": {
+        "mindstream.language": {
           "type": "string",
           "enum": [
             "fr",
             "en"
           ],
           "default": "fr",
-          "description": "Langue de narration, des explications et de l'interface CodePace."
+          "description": "Langue de narration, des explications et de l'interface MindStream."
         },
-        "codepace.defaultSpeed": {
+        "mindstream.defaultSpeed": {
           "type": "string",
           "enum": [
             "0.5x",
@@ -239,7 +239,7 @@
           "default": "1x",
           "description": "Vitesse par défaut au démarrage d'une session."
         },
-        "codepace.aiProvider": {
+        "mindstream.aiProvider": {
           "type": "string",
           "enum": [
             "auto",
@@ -251,22 +251,22 @@
           "default": "auto",
           "description": "Fournisseur d'IA utilisé pour la recherche, le plan et les réponses au barge-in."
         },
-        "codepace.geminiModel": {
+        "mindstream.geminiModel": {
           "type": "string",
           "default": "gemini-4-hydrogen",
           "description": "Modèle Gemini utilisé pour le mode Live AI."
         },
-        "codepace.openaiBaseUrl": {
+        "mindstream.openaiBaseUrl": {
           "type": "string",
           "default": "https://api.openai.com/v1",
           "description": "URL de base compatible OpenAI (OpenAI, OpenRouter, Ollama, Groq)."
         },
-        "codepace.openaiModel": {
+        "mindstream.openaiModel": {
           "type": "string",
           "default": "gpt-4o-mini",
           "description": "Modèle utilisé avec le fournisseur compatible OpenAI."
         },
-        "codepace.ttsProvider": {
+        "mindstream.ttsProvider": {
           "type": "string",
           "enum": [
             "auto",
@@ -277,24 +277,24 @@
           "default": "auto",
           "description": "Moteur de synthèse vocale (auto choisit Web Speech puis repli OS natif)."
         },
-        "codepace.geminiTtsVoice": {
+        "mindstream.geminiTtsVoice": {
           "type": "string",
           "default": "Kore",
-          "description": "Voix Gemini TTS utilisée lorsque codepace.ttsProvider est réglé sur 'gemini'."
+          "description": "Voix Gemini TTS utilisée lorsque mindstream.ttsProvider est réglé sur 'gemini'."
         },
-        "codepace.voiceRateMultiplier": {
+        "mindstream.voiceRateMultiplier": {
           "type": "number",
           "default": 1.0,
           "minimum": 0.6,
           "maximum": 1.8,
           "description": "Multiplicateur de cadence vocale appliqué par-dessus le profil de vitesse."
         },
-        "codepace.autoResearchIntro": {
+        "mindstream.autoResearchIntro": {
           "type": "boolean",
           "default": true,
           "description": "Lire automatiquement à voix haute la synthèse de recherche avant d'écrire la première ligne."
         },
-        "codepace.showInlineAnnotations": {
+        "mindstream.showInlineAnnotations": {
           "type": "boolean",
           "default": true,
           "description": "Afficher l'annotation discrète en fin de ligne pendant l'écriture synchronisée."

@@ -3,6 +3,6 @@ dist/
 out/
 *.vsix
 .DS_Store
-codepace-demo/
+mindstream-demo/
 coverage/
 agent-plugin/mcp/mcp-server.js

@@ -8,4 +8,4 @@ tsconfig.json
 *.vsix
 node_modules/**
 !node_modules/@google/genai/**
-codepace-demo/**
+mindstream-demo/**

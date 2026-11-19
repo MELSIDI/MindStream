@@ -25,22 +25,22 @@ export class StatusBarController implements vscode.Disposable {
     this.stopItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 102);
     this.tickerItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 101);
 
-    this.idleItem.command = 'codepace.quickMenu';
-    this.playPauseItem.command = 'codepace.togglePlayPause';
-    this.speedItem.command = 'codepace.cycleSpeed';
-    this.skipItem.command = 'codepace.skipBlock';
-    this.fileFastItem.command = 'codepace.implementFileAndPause';
-    this.bargeInItem.command = 'codepace.bargeIn';
-    this.muteItem.command = 'codepace.toggleMute';
-    this.stopItem.command = 'codepace.stopSession';
-    this.tickerItem.command = 'codepace.openStudio';
+    this.idleItem.command = 'mindstream.quickMenu';
+    this.playPauseItem.command = 'mindstream.togglePlayPause';
+    this.speedItem.command = 'mindstream.cycleSpeed';
+    this.skipItem.command = 'mindstream.skipBlock';
+    this.fileFastItem.command = 'mindstream.implementFileAndPause';
+    this.bargeInItem.command = 'mindstream.bargeIn';
+    this.muteItem.command = 'mindstream.toggleMute';
+    this.stopItem.command = 'mindstream.stopSession';
+    this.tickerItem.command = 'mindstream.openStudio';
   }
 
   public update(state: SessionUIState): void {
     const hasSession = state.playbackState !== 'idle';
     if (hasSession !== this.lastHasSession) {
       this.lastHasSession = hasSession;
-      void vscode.commands.executeCommand('setContext', 'codepace.hasSession', hasSession);
+      void vscode.commands.executeCommand('setContext', 'mindstream.hasSession', hasSession);
     }
 
     const isFr = state.language === 'fr';
@@ -55,10 +55,10 @@ export class StatusBarController implements vscode.Disposable {
       this.stopItem.hide();
       this.tickerItem.hide();
 
-      this.idleItem.text = '$(radio-tower) CodePace';
+      this.idleItem.text = '$(radio-tower) MindStream';
       this.idleItem.tooltip = isFr
-        ? 'Tapez /CodePace dans le chat pour coder à vitesse humaine — cliquez pour les options'
-        : 'Type /CodePace in chat to code at human pace — click for quick actions';
+        ? 'Tapez /MindStream dans le chat pour coder à vitesse humaine — cliquez pour les options'
+        : 'Type /MindStream in chat to code at human pace — click for quick actions';
       this.idleItem.show();
       return;
     }
@@ -179,7 +179,7 @@ export class StatusBarController implements vscode.Disposable {
 
     // 7. Stop
     this.stopItem.text = '$(debug-stop)';
-    this.stopItem.tooltip = isFr ? 'Arrêter CodePace' : 'Stop CodePace';
+    this.stopItem.tooltip = isFr ? 'Arrêter MindStream' : 'Stop MindStream';
     this.stopItem.show();
 
     // 8. Minimalist live ticker
@@ -191,11 +191,11 @@ export class StatusBarController implements vscode.Disposable {
         : '';
       this.tickerItem.text = `${state.currentFilePath}:${state.currentLineNumber}${shortTitle}`;
     } else {
-      this.tickerItem.text = state.sessionTitle || 'CodePace';
+      this.tickerItem.text = state.sessionTitle || 'MindStream';
     }
     this.tickerItem.tooltip = isFr
-      ? 'Ouvrir le Mini-HUD CodePace'
-      : 'Open CodePace Mini-HUD';
+      ? 'Ouvrir le Mini-HUD MindStream'
+      : 'Open MindStream Mini-HUD';
     this.tickerItem.show();
   }
 

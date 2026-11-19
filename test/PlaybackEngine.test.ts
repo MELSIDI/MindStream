@@ -112,7 +112,7 @@ function makeSamplePlan(): CodingSessionPlan {
   return {
     id: 'test-plan',
     title: 'Test Plan',
-    goal: 'Test CodePace',
+    goal: 'Test MindStream',
     isDemo: true,
     language: 'fr',
     rootSubdir: 'tmp-test',

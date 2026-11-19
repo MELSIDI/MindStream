@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "codepace-driver": {
+    "mindstream-driver": {
       "command": "node",
       "type": "stdio",
       "args": [

@@ -33,7 +33,7 @@ export interface SidebarActionHandlers {
 }
 
 export class SidebarViewProvider implements vscode.WebviewViewProvider {
-  public static readonly viewType = 'codepace.studioView';
+  public static readonly viewType = 'mindstream.studioView';
 
   private view: vscode.WebviewView | undefined;
   private isWebviewReady = false;
@@ -83,7 +83,7 @@ export class SidebarViewProvider implements vscode.WebviewViewProvider {
       this.view.show(preserveFocus);
       return;
     }
-    await vscode.commands.executeCommand('codepace.studioView.focus');
+    await vscode.commands.executeCommand('mindstream.studioView.focus');
   }
 
   public postState(state: SessionUIState): void {
@@ -165,8 +165,8 @@ export class SidebarViewProvider implements vscode.WebviewViewProvider {
         const lang = this.actions.getLatestState().language;
         const sample =
           lang === 'fr'
-            ? 'Bonjour ! Je suis CodePace, ton binôme de pair-programming. Prêt à coder ensemble à ton rythme.'
-            : 'Hello! I am CodePace, your pair-programming partner. Ready to code at your pace.';
+            ? 'Bonjour ! Je suis MindStream, ton binôme de pair-programming. Prêt à coder ensemble à ton rythme.'
+            : 'Hello! I am MindStream, your pair-programming partner. Ready to code at your pace.';
         void this.voiceCoordinator.speakSentences(sample, {
           lang,
           rate: 1.0,
@@ -226,7 +226,7 @@ export class SidebarViewProvider implements vscode.WebviewViewProvider {
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy" content="${csp}" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CodePace Studio</title>
+  <title>MindStream Studio</title>
   <link rel="stylesheet" href="${styleUri.toString()}" />
 </head>
 <body>

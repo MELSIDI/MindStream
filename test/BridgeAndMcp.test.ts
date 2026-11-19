@@ -245,7 +245,7 @@ describe('BridgeServer & LiveAgentSessionDriver', () => {
       language: 'fr',
       defaultSpeed: '0.5x',
       voiceRateMultiplier: 1.0,
-      providerLabel: 'Chat /CodePace',
+      providerLabel: 'Chat /MindStream',
     });
 
     const server = new BridgeServer(driver, () => [tmpDir], registry);
@@ -263,7 +263,7 @@ describe('BridgeServer & LiveAgentSessionDriver', () => {
 
     // 2. Start session
     const startRes = await postBridge(entry.port, entry.token, '/session/start', {
-      title: 'Test /CodePace',
+      title: 'Test /MindStream',
       goal: 'Build module',
       plannedFiles: ['a.ts', 'b.ts'],
     });
@@ -366,7 +366,7 @@ describe('BridgeServer & LiveAgentSessionDriver', () => {
       language: 'fr',
       defaultSpeed: '3x',
       voiceRateMultiplier: 1.0,
-      providerLabel: 'Chat /CodePace',
+      providerLabel: 'Chat /MindStream',
     });
 
     const server = new BridgeServer(driver, () => [tmpDir], registry);
@@ -435,14 +435,14 @@ describe('BridgeServer & LiveAgentSessionDriver', () => {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'cp-multiwin-'));
     tempDirs.push(tmpDir);
 
-    const codepaceDir = path.join(tmpDir, 'CodePace');
+    const mindstreamDir = path.join(tmpDir, 'MindStream');
     const snakeDir = path.join(tmpDir, 'Snake');
-    await fs.mkdir(codepaceDir, { recursive: true });
+    await fs.mkdir(mindstreamDir, { recursive: true });
     await fs.mkdir(snakeDir, { recursive: true });
 
     const registry = new BridgeRegistry(path.join(tmpDir, 'bridges.json'));
 
-    let codepaceCheckpoints = 0;
+    let mindstreamCheckpoints = 0;
     const driverA = new LiveAgentSessionDriver(
       new InMemoryLiveEditor(),
       new SilentVoiceAdapter(),
@@ -450,14 +450,14 @@ describe('BridgeServer & LiveAgentSessionDriver', () => {
     );
     driverA.setPromptHooks({
       onCheckpointPromptNeeded: () => {
-        codepaceCheckpoints += 1;
+        mindstreamCheckpoints += 1;
         setTimeout(() => driverA.resolveCheckpoint('opt-1'), 10);
       },
     });
-    const serverA = new BridgeServer(driverA, () => [codepaceDir], registry);
+    const serverA = new BridgeServer(driverA, () => [mindstreamDir], registry);
     serversToClose.push(serverA);
     await serverA.start();
-    await serverA.setFocused(true); // Focused window is CodePace!
+    await serverA.setFocused(true); // Focused window is MindStream!
 
     let snakeCheckpoints = 0;
     const driverB = new LiveAgentSessionDriver(
@@ -501,7 +501,7 @@ describe('BridgeServer & LiveAgentSessionDriver', () => {
 
     expect(ckRes.ok).toBe(true);
     expect(snakeCheckpoints).toBe(1);
-    expect(codepaceCheckpoints).toBe(0);
+    expect(mindstreamCheckpoints).toBe(0);
   });
 });
 
@@ -523,7 +523,7 @@ describe('MCP Server stdio integration (dist/mcp-server.js)', () => {
       cwd: tmpDir,
       env: {
         ...process.env,
-        CODEPACE_REGISTRY_PATH: path.join(tmpDir, 'no-bridges.json'),
+        MINDSTREAM_REGISTRY_PATH: path.join(tmpDir, 'no-bridges.json'),
       },
       stdio: ['pipe', 'pipe', 'pipe'],
     });
@@ -566,7 +566,7 @@ describe('MCP Server stdio integration (dist/mcp-server.js)', () => {
 
     try {
       const initRes = await rpc(1, 'initialize', { protocolVersion: '2024-11-05' });
-      expect((initRes.serverInfo as { name: string }).name).toBe('codepace-driver');
+      expect((initRes.serverInfo as { name: string }).name).toBe('mindstream-driver');
 
       proc.stdin.write(
         JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n',
@@ -575,26 +575,26 @@ describe('MCP Server stdio integration (dist/mcp-server.js)', () => {
       const listRes = await rpc(2, 'tools/list');
       const tools = listRes.tools as Array<{ name: string }>;
       expect(tools.map((t) => t.name)).toEqual([
-        'codepace_start_session',
-        'codepace_write_block',
-        'codepace_checkpoint',
-        'codepace_speak',
-        'codepace_control',
-        'codepace_finish_session',
+        'mindstream_start_session',
+        'mindstream_write_block',
+        'mindstream_checkpoint',
+        'mindstream_speak',
+        'mindstream_control',
+        'mindstream_finish_session',
       ]);
 
       // Silence audio & switch to 3x before testing write_block in headless standalone mode
       await rpc(3, 'tools/call', {
-        name: 'codepace_control',
+        name: 'mindstream_control',
         arguments: { action: 'mute' },
       });
       await rpc(4, 'tools/call', {
-        name: 'codepace_control',
+        name: 'mindstream_control',
         arguments: { action: 'set_speed', speed: '3x' },
       });
 
       const writeRes = await rpc(5, 'tools/call', {
-        name: 'codepace_write_block',
+        name: 'mindstream_write_block',
         arguments: {
           filePath: 'hello.ts',
           workspaceRoot: tmpDir,
