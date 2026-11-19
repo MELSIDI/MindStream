@@ -66,3 +66,9 @@ Extension IDE MindStream (`dist/extension.js`)
    ├── VoiceCoordinator + NativeTTSFallback (worker C#/SAPI chaud sur Windows, say, spd-say, Web Speech)
    └── StatusBarController minimaliste + Mini-HUD optionnel (`dist/webview.js`)
 ```
+
+---
+
+## Licence
+
+Ce projet est open source, distribué sous licence **MIT** — voir le fichier [LICENSE](LICENSE) pour plus de détails.
