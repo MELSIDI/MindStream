@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "codepace-driver": {
+      "command": "node",
+      "type": "stdio",
+      "args": [
+        "mcp/mcp-server.js"
+      ]
+    }
+  }
+}

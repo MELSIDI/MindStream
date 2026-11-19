@@ -1,0 +1,334 @@
+:root {
+  --cp-accent: #6366f1;
+  --cp-emerald: #10b981;
+  --cp-amber: #f59e0b;
+  --cp-rose: #f43f5e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 8px;
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  color: var(--vscode-foreground);
+  background: var(--vscode-sideBar-background);
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hud-card {
+  background: var(--vscode-editorWidget-background, var(--vscode-sideBarSectionHeader-background));
+  border: 1px solid var(--vscode-widget-border, var(--vscode-panel-border));
+  border-radius: 9px;
+  padding: 9px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.hud-player.state-playing {
+  border-color: rgba(99, 102, 241, 0.55);
+}
+
+.hud-player.state-paused {
+  border-color: rgba(245, 158, 11, 0.55);
+}
+
+.hud-player.state-interrupted,
+.hud-bargein {
+  border-color: rgba(244, 63, 94, 0.65);
+}
+
+.hud-checkpoint {
+  border-color: rgba(16, 185, 129, 0.6);
+}
+
+.hud-row,
+.hud-row-tight,
+.hud-row-between {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud-row-between {
+  justify-content: space-between;
+}
+
+.hud-title {
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.hud-text {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--vscode-descriptionForeground);
+}
+
+.hud-shortcuts {
+  font-size: 10.5px;
+  padding: 5px 7px;
+  border-radius: 6px;
+  background: var(--vscode-textCodeBlock-background);
+  color: var(--vscode-descriptionForeground);
+}
+
+.hud-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--vscode-badge-background);
+  color: var(--vscode-badge-foreground);
+}
+
+.hud-loc {
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 10.5px;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: var(--vscode-textCodeBlock-background);
+  max-width: 145px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hud-block-name {
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.hud-wave {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 13px;
+}
+
+.hud-wave-bar {
+  width: 2.5px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--cp-accent);
+  opacity: 0.45;
+}
+
+.hud-wave.speaking .hud-wave-bar {
+  opacity: 1;
+  animation: hud-pulse 0.85s ease-in-out infinite;
+}
+
+.hud-wave.speaking .hud-wave-bar:nth-child(2) { animation-delay: 0.14s; }
+.hud-wave.speaking .hud-wave-bar:nth-child(3) { animation-delay: 0.28s; }
+.hud-wave.speaking .hud-wave-bar:nth-child(4) { animation-delay: 0.42s; }
+
+@keyframes hud-pulse {
+  0%, 100% { height: 4px; }
+  50% { height: 13px; }
+}
+
+.hud-progress-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--vscode-scrollbarSlider-background);
+  overflow: hidden;
+}
+
+.hud-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--cp-accent), var(--cp-emerald));
+  transition: width 0.2s ease;
+}
+
+.hud-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hud-btn,
+.hud-icon-btn,
+.hud-btn-xs {
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+}
+
+.hud-btn {
+  padding: 6px 9px;
+  font-size: 11.5px;
+  flex: 1;
+}
+
+.hud-btn-primary {
+  background: var(--cp-accent);
+  color: #ffffff;
+}
+
+.hud-btn-ghost {
+  background: transparent;
+  border-color: var(--vscode-panel-border);
+  color: var(--vscode-foreground);
+}
+
+.hud-icon-btn {
+  background: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+  padding: 5px 7px;
+  font-size: 11.5px;
+}
+
+.hud-barge-btn {
+  background: rgba(244, 63, 94, 0.16);
+  border-color: rgba(244, 63, 94, 0.4);
+}
+
+.hud-icon-btn.listening {
+  border-color: var(--cp-rose);
+  background: rgba(244, 63, 94, 0.22);
+}
+
+.hud-btn-xs {
+  padding: 2px 6px;
+  font-size: 10px;
+  background: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+}
+
+.hud-btn:disabled,
+.hud-icon-btn:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.hud-speed-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 3px;
+}
+
+.hud-speed-pill {
+  border: 1px solid var(--vscode-panel-border);
+  background: transparent;
+  color: var(--vscode-foreground);
+  border-radius: 5px;
+  padding: 4px 2px;
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hud-speed-pill.active {
+  background: var(--cp-accent);
+  border-color: var(--cp-accent);
+  color: #ffffff;
+}
+
+.hud-pace-meta {
+  font-size: 10.5px;
+  color: var(--vscode-descriptionForeground);
+}
+
+.hud-banner {
+  font-size: 11px;
+  line-height: 1.35;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+
+.hud-banner-info {
+  background: rgba(99, 102, 241, 0.14);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+}
+
+.hud-banner-warn {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+}
+
+.hud-caption-box {
+  border-radius: 7px;
+  padding: 7px 8px;
+  background: var(--vscode-textCodeBlock-background);
+  border: 1px solid var(--vscode-panel-border);
+  min-height: 36px;
+}
+
+.hud-caption-text {
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+.hud-caption-muted {
+  color: var(--vscode-descriptionForeground);
+  font-style: italic;
+}
+
+.hud-karaoke {
+  background: rgba(99, 102, 241, 0.35);
+  color: var(--vscode-foreground);
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+.hud-input,
+.hud-select {
+  flex: 1;
+  min-width: 0;
+  border-radius: 6px;
+  border: 1px solid var(--vscode-input-border, var(--vscode-panel-border));
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  padding: 5px 7px;
+  font-family: inherit;
+  font-size: 11.5px;
+}
+
+.hud-opt-btn {
+  text-align: left;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--vscode-panel-border);
+  background: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hud-opt-btn.recommended {
+  border-color: var(--cp-emerald);
+}
+
+.hud-file-row {
+  font-size: 11px;
+}
+
+.hud-file-row.status-done {
+  opacity: 0.65;
+}
+
+.hud-file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hud-footer {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}

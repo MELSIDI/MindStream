@@ -1,0 +1,322 @@
+{
+  "name": "codepace",
+  "displayName": "CodePace — Pair-Programming Synchronisé & Vocal",
+  "description": "Transforme l'agent IA en binôme de Pair-Programming humain qui code à votre rythme en expliquant chaque choix à voix haute avec pause, variateur de vitesse, barge-in vocal et mode démo intégré.",
+  "version": "0.2.1",
+  "publisher": "codepace",
+  "license": "MIT",
+  "keywords": [
+    "ai",
+    "pair-programming",
+    "voice",
+    "tts",
+    "pedagogy",
+    "codepace",
+    "gemini",
+    "antigravity"
+  ],
+  "categories": [
+    "AI",
+    "Education",
+    "Programming Languages",
+    "Other"
+  ],
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "codepace-studio",
+          "title": "CodePace",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "codepace-studio": [
+        {
+          "type": "webview",
+          "id": "codepace.studioView",
+          "name": "CodePace Mini-HUD"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "codepace.openStudio",
+        "title": "CodePace: Ouvrir le Mini-HUD",
+        "icon": "$(radio-tower)"
+      },
+      {
+        "command": "codepace.quickMenu",
+        "title": "CodePace: Menu Rapide"
+      },
+      {
+        "command": "codepace.installAntigravityPlugin",
+        "title": "CodePace: Installer le plugin /CodePace (Antigravity & MCP)",
+        "icon": "$(plug)"
+      },
+      {
+        "command": "codepace.startDemo",
+        "title": "CodePace: Lancer la Démo Interactive (Sans clé API)",
+        "icon": "$(play)"
+      },
+      {
+        "command": "codepace.startSession",
+        "title": "CodePace: Démarrer une session de Pair-Programming",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "codepace.togglePlayPause",
+        "title": "CodePace: Lecture / Pause",
+        "icon": "$(debug-pause)"
+      },
+      {
+        "command": "codepace.cycleSpeed",
+        "title": "CodePace: Changer la vitesse",
+        "icon": "$(dashboard)"
+      },
+      {
+        "command": "codepace.setSpeed",
+        "title": "CodePace: Choisir une vitesse précise",
+        "icon": "$(dashboard)"
+      },
+      {
+        "command": "codepace.bargeIn",
+        "title": "CodePace: Interrompre & Poser une question (Barge-in)",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "codepace.implementFileAndPause",
+        "title": "CodePace: Implémenter ce fichier rapidement puis pause",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "codepace.skipBlock",
+        "title": "CodePace: Passer au bloc suivant",
+        "icon": "$(debug-step-over)"
+      },
+      {
+        "command": "codepace.stopSession",
+        "title": "CodePace: Arrêter la session",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "codepace.configureApiKey",
+        "title": "CodePace: Configurer une clé API (Gemini / OpenAI)",
+        "icon": "$(key)"
+      },
+      {
+        "command": "codepace.toggleMute",
+        "title": "CodePace: Couper / Activer la voix",
+        "icon": "$(unmute)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "codepace.togglePlayPause",
+        "key": "ctrl+alt+p",
+        "mac": "cmd+alt+p",
+        "when": "codepace.hasSession"
+      },
+      {
+        "command": "codepace.cycleSpeed",
+        "key": "ctrl+alt+s",
+        "mac": "cmd+alt+s",
+        "when": "codepace.hasSession"
+      },
+      {
+        "command": "codepace.bargeIn",
+        "key": "ctrl+shift+space",
+        "mac": "cmd+shift+space",
+        "when": "codepace.hasSession"
+      },
+      {
+        "command": "codepace.implementFileAndPause",
+        "key": "ctrl+alt+f",
+        "mac": "cmd+alt+f",
+        "when": "codepace.hasSession"
+      },
+      {
+        "command": "codepace.skipBlock",
+        "key": "ctrl+alt+n",
+        "mac": "cmd+alt+n",
+        "when": "codepace.hasSession"
+      }
+    ],
+    "chatParticipants": [
+      {
+        "id": "codepace.pair",
+        "fullName": "CodePace",
+        "name": "codepace",
+        "description": "Pair-programming synchronisé à vitesse humaine & voix (/CodePace)",
+        "isSticky": true,
+        "commands": [
+          {
+            "name": "demo",
+            "description": "Lancer la démo interactive FocusFlow (sans clé API)"
+          },
+          {
+            "name": "speed",
+            "description": "Régler la vitesse (0.5x, 1x, 2x, 3x, auto)"
+          },
+          {
+            "name": "pause",
+            "description": "Mettre en pause"
+          },
+          {
+            "name": "resume",
+            "description": "Reprendre la lecture"
+          },
+          {
+            "name": "skip",
+            "description": "Passer au bloc suivant"
+          },
+          {
+            "name": "file",
+            "description": "Implémenter un fichier rapidement puis mettre en pause"
+          },
+          {
+            "name": "stop",
+            "description": "Arrêter la session"
+          }
+        ]
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "codepace.implementFileAndPause",
+          "group": "navigation@99"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "codepace.bargeIn",
+          "when": "codepace.hasSession",
+          "group": "codepace@1"
+        },
+        {
+          "command": "codepace.implementFileAndPause",
+          "group": "codepace@2"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "codepace.startDemo",
+          "when": "view == codepace.studioView",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "CodePace",
+      "properties": {
+        "codepace.language": {
+          "type": "string",
+          "enum": [
+            "fr",
+            "en"
+          ],
+          "default": "fr",
+          "description": "Langue de narration, des explications et de l'interface CodePace."
+        },
+        "codepace.defaultSpeed": {
+          "type": "string",
+          "enum": [
+            "0.5x",
+            "1x",
+            "2x",
+            "3x",
+            "auto"
+          ],
+          "default": "1x",
+          "description": "Vitesse par défaut au démarrage d'une session."
+        },
+        "codepace.aiProvider": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "gemini",
+            "openai-compatible",
+            "vscode-lm",
+            "demo"
+          ],
+          "default": "auto",
+          "description": "Fournisseur d'IA utilisé pour la recherche, le plan et les réponses au barge-in."
+        },
+        "codepace.geminiModel": {
+          "type": "string",
+          "default": "gemini-4-hydrogen",
+          "description": "Modèle Gemini utilisé pour le mode Live AI."
+        },
+        "codepace.openaiBaseUrl": {
+          "type": "string",
+          "default": "https://api.openai.com/v1",
+          "description": "URL de base compatible OpenAI (OpenAI, OpenRouter, Ollama, Groq)."
+        },
+        "codepace.openaiModel": {
+          "type": "string",
+          "default": "gpt-4o-mini",
+          "description": "Modèle utilisé avec le fournisseur compatible OpenAI."
+        },
+        "codepace.ttsProvider": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "webspeech",
+            "native",
+            "gemini"
+          ],
+          "default": "auto",
+          "description": "Moteur de synthèse vocale (auto choisit Web Speech puis repli OS natif)."
+        },
+        "codepace.geminiTtsVoice": {
+          "type": "string",
+          "default": "Kore",
+          "description": "Voix Gemini TTS utilisée lorsque codepace.ttsProvider est réglé sur 'gemini'."
+        },
+        "codepace.voiceRateMultiplier": {
+          "type": "number",
+          "default": 1.0,
+          "minimum": 0.6,
+          "maximum": 1.8,
+          "description": "Multiplicateur de cadence vocale appliqué par-dessus le profil de vitesse."
+        },
+        "codepace.autoResearchIntro": {
+          "type": "boolean",
+          "default": true,
+          "description": "Lire automatiquement à voix haute la synthèse de recherche avant d'écrire la première ligne."
+        },
+        "codepace.showInlineAnnotations": {
+          "type": "boolean",
+          "default": true,
+          "description": "Afficher l'annotation discrète en fin de ligne pendant l'écriture synchronisée."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "install:plugin": "node scripts/install-plugin.mjs"
+  },
+  "dependencies": {
+    "@google/genai": "^3.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}

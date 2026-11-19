@@ -1,0 +1,15 @@
+{
+  "name": "codepace",
+  "displayName": "CodePace — Pair-Programming Synchronisé & Vocal",
+  "version": "0.2.1",
+  "description": "Transforme l'agent IA en binôme de Pair-Programming humain directement depuis le chat (/CodePace) : écriture progressive synchronisée à la voix, variateur de vitesse, mode Auto intelligent, checkpoints et barge-in.",
+  "logo": "assets/logo.svg",
+  "suggestedPrompts": [
+    "Implémente cette fonctionnalité étape par étape avec explications /CodePace",
+    "Code uniquement le service principal en mode rapide puis pause /CodePace",
+    "Passe la vitesse CodePace en mode auto et continue /CodePace"
+  ],
+  "author": {
+    "name": "CodePace"
+  }
+}
