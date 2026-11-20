@@ -8,6 +8,8 @@ export type PlaybackState =
   | 'checkpoint'
   | 'completed';
 
+export type LanguageSetting = 'auto' | 'fr' | 'en';
+
 export type SpeedMode = '0.5x' | '1x' | '2x' | '3x' | 'auto';
 
 export type BlockCategory =
@@ -156,7 +158,7 @@ export interface VoiceOptionInfo {
   id: string;
   name: string;
   lang: string;
-  source: 'webspeech' | 'native' | 'gemini';
+  source: 'kokoro' | 'webspeech' | 'native' | 'gemini';
 }
 
 export interface TimelineBlockSummary {

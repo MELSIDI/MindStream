@@ -1,4 +1,5 @@
 import { CodingSessionPlan, LiveContextSnapshot } from '../types/session';
+import { detectLanguage } from '../voice/LanguageDetector';
 import {
   AIProvider,
   extractJsonObject,
@@ -56,10 +57,11 @@ export class OpenAICompatProvider implements AIProvider {
     plan: CodingSessionPlan,
     customOptionHint?: string,
   ): Promise<string> {
+    const answerLang = detectLanguage(question, plan.language).language;
     return (
       await this.chat(
         [
-          { role: 'system', content: buildBargeInSystemPrompt(plan.language) },
+          { role: 'system', content: buildBargeInSystemPrompt(answerLang) },
           {
             role: 'user',
             content: buildBargeInUserPrompt(question, snapshot, plan, customOptionHint),

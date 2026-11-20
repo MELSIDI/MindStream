@@ -8,7 +8,7 @@ import {
   StartLiveSessionParams,
   WriteLiveBlockParams,
 } from './LiveAgentSessionDriver';
-import { SpeedMode } from '../types/session';
+import { LanguageSetting, SpeedMode } from '../types/session';
 
 export class BridgeServer {
   private readonly id = `bridge-${process.pid}-${crypto.randomBytes(4).toString('hex')}`;
@@ -167,7 +167,11 @@ export class BridgeServer {
         const text = typeof body.text === 'string' ? body.text : '';
         const waitForCompletion =
           typeof body.waitForCompletion === 'boolean' ? body.waitForCompletion : true;
-        const result = await this.driver.speak(text, waitForCompletion);
+        const language =
+          body.language === 'auto' || body.language === 'fr' || body.language === 'en'
+            ? (body.language as LanguageSetting)
+            : undefined;
+        const result = await this.driver.speak(text, waitForCompletion, language);
         this.sendJson(res, 200, result);
         return;
       }

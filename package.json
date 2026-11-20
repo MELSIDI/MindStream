@@ -4,7 +4,7 @@
   "description": "Transforme l'agent IA en binôme de Pair-Programming humain qui code à votre rythme en expliquant chaque choix à voix haute avec pause, variateur de vitesse, barge-in vocal et mode démo intégré.",
   "version": "0.2.1",
   "publisher": "mindstream",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "keywords": [
     "ai",
     "pair-programming",
@@ -61,6 +61,11 @@
         "command": "mindstream.installAntigravityPlugin",
         "title": "MindStream: Installer le plugin /MindStream (Antigravity & MCP)",
         "icon": "$(plug)"
+      },
+      {
+        "command": "mindstream.setupKokoro",
+        "title": "MindStream: Installer / Configurer Kokoro-82M TTS Local",
+        "icon": "$(unmute)"
       },
       {
         "command": "mindstream.startDemo",
@@ -221,11 +226,12 @@
         "mindstream.language": {
           "type": "string",
           "enum": [
+            "auto",
             "fr",
             "en"
           ],
-          "default": "fr",
-          "description": "Langue de narration, des explications et de l'interface MindStream."
+          "default": "auto",
+          "description": "Langue de narration et de l'interface ('auto' détecte automatiquement français ou anglais depuis votre prompt et vos questions)."
         },
         "mindstream.defaultSpeed": {
           "type": "string",
@@ -270,12 +276,44 @@
           "type": "string",
           "enum": [
             "auto",
+            "kokoro",
             "webspeech",
             "native",
             "gemini"
           ],
           "default": "auto",
-          "description": "Moteur de synthèse vocale (auto choisit Web Speech puis repli OS natif)."
+          "description": "Moteur de synthèse vocale ('auto' privilégie Kokoro-82M local si installé, sinon Web Speech puis OS natif)."
+        },
+        "mindstream.kokoroVoiceFr": {
+          "type": "string",
+          "default": "ff_siwis",
+          "description": "Voix Kokoro-82M utilisée automatiquement lorsque le texte est détecté en français."
+        },
+        "mindstream.kokoroVoiceEn": {
+          "type": "string",
+          "default": "af_heart",
+          "description": "Voix Kokoro-82M utilisée automatiquement lorsque le texte est détecté en anglais."
+        },
+        "mindstream.kokoroPythonPath": {
+          "type": "string",
+          "default": "",
+          "description": "Chemin optionnel vers l'exécutable Python contenant Kokoro (vide = ~/.mindstream/kokoro-venv)."
+        },
+        "mindstream.kokoroDevice": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "cpu",
+            "cuda",
+            "mps"
+          ],
+          "default": "auto",
+          "description": "Périphérique d'inférence pour Kokoro-82M local (auto détecte CUDA/MPS ou CPU)."
+        },
+        "mindstream.autoDetectSpeechLanguage": {
+          "type": "boolean",
+          "default": true,
+          "description": "Détecter intelligemment la langue (français ou anglais) de chaque phrase avant synthèse vocale."
         },
         "mindstream.geminiTtsVoice": {
           "type": "string",
@@ -307,7 +345,8 @@
     "watch": "node esbuild.mjs --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "install:plugin": "node scripts/install-plugin.mjs"
+    "install:plugin": "node scripts/install-plugin.mjs",
+    "setup:kokoro": "node scripts/setup-kokoro.mjs"
   },
   "dependencies": {
     "@google/genai": "^3.6.1"

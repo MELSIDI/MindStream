@@ -43,7 +43,14 @@ Cela installe le plugin global dans `~/.gemini/config/plugins/mindstream/` (`plu
 
 > Vous pouvez aussi l'installer directement depuis la palette de commandes de l'extension : `MindStream: Installer le plugin /MindStream (Antigravity & MCP)`.
 
-### 2. Lancer ou installer l'extension IDE
+### 2. Installer la voix neurale locale Kokoro-82M (`hexgrad/Kokoro-82M`) + détection auto FR/EN
+MindStream utilise **Kokoro-82M** localement (sans clé API ni latence réseau) et détecte intelligemment si vos prompts, questions barge-in et phrases sont en **français** (`ff_siwis`, `lang_code='f'`) ou en **anglais** (`af_heart`, `lang_code='a'`) :
+```bash
+npm run setup:kokoro
+```
+Cela crée l'environnement isolé `~/.mindstream/kokoro-venv`, installe `kokoro`, `misaki[en]` et `espeakng-loader`, puis pré-télécharge `hexgrad/Kokoro-82M`. *(Vous pouvez aussi le lancer depuis la palette de commandes : `MindStream: Installer / Configurer Kokoro-82M TTS Local`. Sans Kokoro installé, MindStream bascule automatiquement sur Web Speech ou la synthèse OS native.)*
+
+### 3. Lancer ou installer l'extension IDE
 - En développement : ouvrez le dossier du projet dans VS Code / Antigravity et appuyez sur **`F5`** (`Lancer MindStream`).
 - Ou installez `mindstream-0.2.1.vsix` (`Extensions → ... → Install from VSIX...`) pour qu'elle soit active sur **tous vos projets**.
 - Un **Mode Démo FocusFlow** reste également accessible sans projet ni IA via `MindStream: Lancer la Démo Interactive`.
@@ -63,7 +70,7 @@ Serveur MCP `mindstream-driver` (`dist/mcp-server.js`, zéro dépendance externe
 Extension IDE MindStream (`dist/extension.js`)
    ├── BridgeServer + LiveAgentSessionDriver (pause, skip, speed, file+pause, barge-in, checkpoints)
    ├── EditorChoreographer + ContainerLocator + EditorDecorator (curseurs, gouttières, squelette-d'abord)
-   ├── VoiceCoordinator + NativeTTSFallback (worker C#/SAPI chaud sur Windows, say, spd-say, Web Speech)
+   ├── VoiceCoordinator + LanguageDetector (FR/EN auto) + KokoroTTSService (hexgrad/Kokoro-82M) + NativeTTSFallback
    └── StatusBarController minimaliste + Mini-HUD optionnel (`dist/webview.js`)
 ```
 
@@ -71,4 +78,6 @@ Extension IDE MindStream (`dist/extension.js`)
 
 ## Licence
 
-Ce projet est open source, distribué sous licence **MIT** — voir le fichier [LICENSE](LICENSE) pour plus de détails.
+Ce projet est open source, distribué sous licence **Apache-2.0** — voir les fichiers [LICENSE](LICENSE) et [NOTICE](NOTICE) pour plus de détails.
+
+La synthèse vocale locale s'appuie sur **Kokoro-82M** ([hexgrad/kokoro](https://github.com/hexgrad/kokoro) / [hexgrad/Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M)), également distribué sous licence **Apache-2.0** (installé localement à la demande dans `~/.mindstream/kokoro-venv` avec ses dépendances Python tierces).

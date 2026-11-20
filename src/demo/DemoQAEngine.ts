@@ -5,6 +5,7 @@ import {
   FileStep,
   LiveContextSnapshot,
 } from '../types/session';
+import { detectLanguage } from '../voice/LanguageDetector';
 
 interface ConstructMatcher {
   pattern: RegExp;
@@ -62,12 +63,12 @@ export class DemoQAEngine implements IQuestionResponder {
     plan: CodingSessionPlan,
     customOptionHint?: string,
   ): Promise<string> {
-    const lang = plan.language;
+    const lang = detectLanguage(question, plan.language).language;
     const qLower = question.toLowerCase();
 
-    // 1. Check block-specific qaHints first
+    // 1. Check block-specific qaHints when the question language matches the plan language
     const matchedBlock = this.findBlock(plan, snapshot.blockId);
-    if (matchedBlock?.qaHints) {
+    if (matchedBlock?.qaHints && lang === plan.language) {
       for (const [keyword, hintAnswer] of Object.entries(matchedBlock.qaHints)) {
         if (qLower.includes(keyword.toLowerCase())) {
           return this.formatAnswer(snapshot, hintAnswer, lang);

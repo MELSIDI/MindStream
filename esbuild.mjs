@@ -11,6 +11,18 @@ function syncStaticAssets() {
     path.resolve('dist/webview.css'),
   );
 
+  const kokoroWorkerSrc = path.resolve('src/voice/kokoro_worker.py');
+  if (fs.existsSync(kokoroWorkerSrc)) {
+    fs.copyFileSync(kokoroWorkerSrc, path.resolve('dist/kokoro_worker.py'));
+    fs.mkdirSync(path.resolve('agent-plugin/mcp'), { recursive: true });
+    fs.copyFileSync(kokoroWorkerSrc, path.resolve('agent-plugin/mcp/kokoro_worker.py'));
+  }
+
+  const setupKokoroSrc = path.resolve('scripts/setup-kokoro.mjs');
+  if (fs.existsSync(setupKokoroSrc)) {
+    fs.copyFileSync(setupKokoroSrc, path.resolve('dist/setup-kokoro.mjs'));
+  }
+
   const builtMcp = path.resolve('dist/mcp-server.js');
   if (fs.existsSync(builtMcp)) {
     fs.mkdirSync(path.resolve('agent-plugin/mcp'), { recursive: true });

@@ -17,16 +17,27 @@ import { buildDemoSessionPlan } from './demo/DemoSessionBuilder';
 import { EditorChoreographer } from './editor/EditorChoreographer';
 import { EditorDecorator } from './editor/EditorDecorator';
 import { PlaybackEngine } from './engine/PlaybackEngine';
-import { CheckpointStep, SessionUIState, SpeedMode } from './types/session';
+import { CheckpointStep, LanguageSetting, SessionUIState, SpeedMode } from './types/session';
 import { registerMindStreamChatParticipant } from './ui/ChatParticipant';
 import { SidebarViewProvider } from './ui/SidebarViewProvider';
 import { StatusBarController } from './ui/StatusBarController';
+import { KokoroDevice } from './voice/KokoroTTSService';
+import {
+  detectLanguage,
+  getSystemLocaleFallback,
+  resolveEffectiveLanguage,
+} from './voice/LanguageDetector';
 import { TTSProviderSetting, VoiceCoordinator } from './voice/VoiceCoordinator';
 
 function readConfig() {
   const cfg = vscode.workspace.getConfiguration('mindstream');
+  const languageMode = (cfg.get<LanguageSetting>('language') ?? 'auto') as LanguageSetting;
+  const fallbackLang = getSystemLocaleFallback(vscode.env.language);
+  const language = resolveEffectiveLanguage(languageMode, undefined, fallbackLang);
+
   return {
-    language: (cfg.get<'fr' | 'en'>('language') ?? 'fr') as 'fr' | 'en',
+    languageMode,
+    language,
     defaultSpeed: (cfg.get<SpeedMode>('defaultSpeed') ?? '1x') as SpeedMode,
     aiProvider: (cfg.get<AIProviderChoice>('aiProvider') ?? 'auto') as AIProviderChoice,
     geminiModel: cfg.get<string>('geminiModel') ?? 'gemini-4-hydrogen',
@@ -34,6 +45,11 @@ function readConfig() {
     openaiModel: cfg.get<string>('openaiModel') ?? 'gpt-4o-mini',
     ttsProvider: (cfg.get<TTSProviderSetting>('ttsProvider') ?? 'auto') as TTSProviderSetting,
     geminiTtsVoice: cfg.get<string>('geminiTtsVoice') ?? 'Kore',
+    kokoroVoiceFr: cfg.get<string>('kokoroVoiceFr') ?? 'ff_siwis',
+    kokoroVoiceEn: cfg.get<string>('kokoroVoiceEn') ?? 'af_heart',
+    kokoroPythonPath: cfg.get<string>('kokoroPythonPath') ?? '',
+    kokoroDevice: (cfg.get<KokoroDevice>('kokoroDevice') ?? 'auto') as KokoroDevice,
+    autoDetectSpeechLanguage: cfg.get<boolean>('autoDetectSpeechLanguage') ?? true,
     voiceRateMultiplier: cfg.get<number>('voiceRateMultiplier') ?? 1.0,
     autoResearchIntro: cfg.get<boolean>('autoResearchIntro') ?? true,
     showInlineAnnotations: cfg.get<boolean>('showInlineAnnotations') ?? true,
@@ -69,9 +85,11 @@ export function activate(context: vscode.ExtensionContext): void {
   let activeAIProvider: AIProvider | null = null;
   let activeChannel: 'demo' | 'mcp' = 'demo';
   let activeCheckpointQuickPick: vscode.QuickPick<vscode.QuickPickItem & { optionId?: string; isCustom?: boolean }> | null = null;
+  let promptedKokoroInstall = false;
 
   const engine = new PlaybackEngine(editorChoreographer, voiceCoordinator, demoQA, {
     language: initialCfg.language,
+    languageMode: initialCfg.languageMode,
     defaultSpeed: initialCfg.defaultSpeed,
     voiceRateMultiplier: initialCfg.voiceRateMultiplier,
     autoResearchIntro: initialCfg.autoResearchIntro,
@@ -80,6 +98,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const liveDriver = new LiveAgentSessionDriver(editorChoreographer, voiceCoordinator, {
     language: initialCfg.language,
+    languageMode: initialCfg.languageMode,
     defaultSpeed: initialCfg.defaultSpeed,
     voiceRateMultiplier: initialCfg.voiceRateMultiplier,
     providerLabel: 'Chat /MindStream',
@@ -155,6 +174,41 @@ export function activate(context: vscode.ExtensionContext): void {
     qp.show();
   };
 
+  const setupKokoroInTerminal = async () => {
+    const isFr = readConfig().language === 'fr';
+    const distScript = path.join(context.extensionPath, 'dist', 'setup-kokoro.mjs');
+    const devScript = path.join(context.extensionPath, 'scripts', 'setup-kokoro.mjs');
+
+    let scriptPath = devScript;
+    try {
+      await fs.access(distScript);
+      scriptPath = distScript;
+    } catch {
+      // Fall back to scripts/setup-kokoro.mjs in dev mode.
+    }
+
+    const terminal = vscode.window.createTerminal({
+      name: 'MindStream · Kokoro-82M Setup',
+    });
+    terminal.show();
+    terminal.sendText(`node "${scriptPath}"`);
+
+    const sub = vscode.window.onDidCloseTerminal((closed) => {
+      if (closed !== terminal) {
+        return;
+      }
+      sub.dispose();
+      const ok = voiceCoordinator.refreshKokoroAvailability();
+      if (ok) {
+        void vscode.window.showInformationMessage(
+          isFr
+            ? 'Kokoro-82M local est installé et prêt (auto FR / EN activé).'
+            : 'Local Kokoro-82M is installed and ready (auto FR / EN enabled).',
+        );
+      }
+    });
+  };
+
   const syncProviderSettings = async () => {
     const cfg = readConfig();
     const geminiApiKey = await context.secrets.get(SECRET_GEMINI_API_KEY);
@@ -165,7 +219,34 @@ export function activate(context: vscode.ExtensionContext): void {
       ttsProvider: cfg.ttsProvider,
       geminiApiKey: geminiApiKey ?? null,
       geminiVoice: cfg.geminiTtsVoice,
+      kokoroVoiceFr: cfg.kokoroVoiceFr,
+      kokoroVoiceEn: cfg.kokoroVoiceEn,
+      kokoroPythonPath: cfg.kokoroPythonPath,
+      kokoroDevice: cfg.kokoroDevice,
+      autoDetectSpeechLanguage: cfg.autoDetectSpeechLanguage,
     });
+
+    if (
+      cfg.ttsProvider === 'kokoro' &&
+      !voiceCoordinator.isKokoroAvailable() &&
+      !promptedKokoroInstall
+    ) {
+      promptedKokoroInstall = true;
+      const isFr = cfg.language === 'fr';
+      const actionLabel = isFr ? 'Installer Kokoro-82M' : 'Install Kokoro-82M';
+      void vscode.window
+        .showInformationMessage(
+          isFr
+            ? "Kokoro-82M local n'est pas encore installé (~/.mindstream/kokoro-venv)."
+            : 'Local Kokoro-82M is not installed yet (~/.mindstream/kokoro-venv).',
+          actionLabel,
+        )
+        .then((picked) => {
+          if (picked === actionLabel) {
+            void setupKokoroInTerminal();
+          }
+        });
+    }
 
     activeAIProvider = await AIProviderFactory.resolve({
       choice: cfg.aiProvider,
@@ -178,6 +259,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
     engine.updateConfig({
       language: cfg.language,
+      languageMode: cfg.languageMode,
       defaultSpeed: cfg.defaultSpeed,
       voiceRateMultiplier: cfg.voiceRateMultiplier,
       autoResearchIntro: cfg.autoResearchIntro,
@@ -186,6 +268,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
     liveDriver.updateConfig({
       language: cfg.language,
+      languageMode: cfg.languageMode,
       defaultSpeed: cfg.defaultSpeed,
       voiceRateMultiplier: cfg.voiceRateMultiplier,
       providerLabel: 'Chat /MindStream',
@@ -238,6 +321,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
     await syncProviderSettings();
     const cfg = readConfig();
+    const promptLang = resolveEffectiveLanguage(cfg.languageMode, cleanPrompt, cfg.language);
 
     if (!activeAIProvider) {
       await startDemoSession();
@@ -246,6 +330,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
     liveDriver.stop();
     activeChannel = 'demo';
+    engine.updateConfig({ language: promptLang });
     engine.setResearching(cleanPrompt);
 
     try {
@@ -253,7 +338,7 @@ export function activate(context: vscode.ExtensionContext): void {
       const plan = await activeAIProvider.generatePlan(
         cleanPrompt,
         wsContext,
-        cfg.language,
+        promptLang,
       );
       editorChoreographer.resetSession(false);
       engine.setQuestionResponder(activeAIProvider);
@@ -460,13 +545,17 @@ export function activate(context: vscode.ExtensionContext): void {
     onBargeInAudioQuestion: async (base64Audio, mimeType) => {
       if (activeAIProvider?.transcribeAudio) {
         try {
+          const cfg = readConfig();
+          const activeLang = getCurrentUIState().language;
           const transcript = await activeAIProvider.transcribeAudio(
             base64Audio,
             mimeType,
-            readConfig().language,
+            activeLang,
           );
           if (transcript) {
+            const detected = detectLanguage(transcript, cfg.language).language;
             if (liveDriver.isActive() || activeChannel === 'mcp') {
+              liveDriver.updateConfig({ language: detected });
               liveDriver.submitBargeInQuestion(transcript, 'voice');
             } else {
               await engine.askQuestion(transcript, 'voice');
@@ -540,6 +629,10 @@ export function activate(context: vscode.ExtensionContext): void {
     liveDriver,
     {
       getLanguage: () => readConfig().language,
+      resolvePromptLanguage: (promptText: string) => {
+        const cfg = readConfig();
+        return resolveEffectiveLanguage(cfg.languageMode, promptText, cfg.language);
+      },
       onDemo: startDemoSession,
       onPause: () => {
         if (liveDriver.isActive() || activeChannel === 'mcp') liveDriver.pause();
@@ -625,6 +718,19 @@ export function activate(context: vscode.ExtensionContext): void {
               : 'Enables /MindStream directly inside your existing chat',
           },
           {
+            id: 'kokoro',
+            label: isFr
+              ? '$(unmute) Installer / Configurer Kokoro-82M TTS Local'
+              : '$(unmute) Install / Configure Local Kokoro-82M TTS',
+            description: voiceCoordinator.isKokoroAvailable()
+              ? isFr
+                ? 'Kokoro-82M local déjà actif (Auto FR/EN)'
+                : 'Local Kokoro-82M already active (Auto FR/EN)'
+              : isFr
+                ? 'Voix neurale locale FR/EN hors-ligne (~/.mindstream/kokoro-venv)'
+                : 'Offline neural FR/EN voice (~/.mindstream/kokoro-venv)',
+          },
+          {
             id: 'info',
             label: '$(comment) Astuce : utilisez /MindStream dans le chat',
             description: isFr
@@ -640,6 +746,7 @@ export function activate(context: vscode.ExtensionContext): void {
       if (choice.id === 'demo') await startDemoSession();
       else if (choice.id === 'hud') await sidebarProvider.reveal(false);
       else if (choice.id === 'plugin') await installPluginBundle(false);
+      else if (choice.id === 'kokoro') await setupKokoroInTerminal();
       else {
         void vscode.window.showInformationMessage(
           isFr
@@ -702,6 +809,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('mindstream.installAntigravityPlugin', () =>
       installPluginBundle(false),
     ),
+    vscode.commands.registerCommand('mindstream.setupKokoro', setupKokoroInTerminal),
   );
 
   void syncProviderSettings();

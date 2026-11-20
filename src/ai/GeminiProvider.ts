@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import { CodingSessionPlan, LiveContextSnapshot } from '../types/session';
+import { detectLanguage } from '../voice/LanguageDetector';
 import {
   AIProvider,
   extractJsonObject,
@@ -51,9 +52,10 @@ export class GeminiProvider implements AIProvider {
     plan: CodingSessionPlan,
     customOptionHint?: string,
   ): Promise<string> {
+    const answerLang = detectLanguage(question, plan.language).language;
     const interaction = await this.client.interactions.create({
       model: this.model,
-      system_instruction: buildBargeInSystemPrompt(plan.language),
+      system_instruction: buildBargeInSystemPrompt(answerLang),
       input: buildBargeInUserPrompt(question, snapshot, plan, customOptionHint),
     });
 

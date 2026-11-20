@@ -57,6 +57,7 @@ function getStructuralSignature(s: SessionUIState): string {
     isAnsweringQuestion: s.isAnsweringQuestion,
     voicesCount: s.availableVoices.length,
     selectedVoiceId: s.selectedVoiceId,
+    ttsBackendLabel: s.ttsBackendLabel,
     autoReason: s.effectivePace?.autoReason ?? null,
     timelineLen: s.timeline.length,
     timelineDone: s.timeline.filter((t) => t.status === 'done').length,
@@ -534,13 +535,14 @@ function buildFilesHud(state: SessionUIState): HTMLElement | null {
 
 function buildFooterHud(state: SessionUIState): HTMLElement {
   const isFr = state.language === 'fr';
+  const wrapper = el('div', 'hud-footer-wrap');
   const footer = el('div', 'hud-footer');
 
   const select = el('select', 'hud-select') as HTMLSelectElement;
   const def = el(
     'option',
     '',
-    isFr ? 'Voix auto (FR / OS)' : 'Auto Voice',
+    isFr ? 'Voix auto (Kokoro / OS)' : 'Auto Voice (Kokoro / OS)',
   ) as HTMLOptionElement;
   def.value = '';
   select.appendChild(def);
@@ -566,7 +568,11 @@ function buildFooterHud(state: SessionUIState): HTMLElement {
   cfgBtn.addEventListener('click', () => post({ type: 'openSettings' }));
 
   footer.append(select, testBtn, cfgBtn);
-  return footer;
+  wrapper.append(
+    footer,
+    el('div', 'hud-pace-meta', `${state.ttsBackendLabel} · ${state.language.toUpperCase()}`),
+  );
+  return wrapper;
 }
 
 function renderFull(state: SessionUIState): void {

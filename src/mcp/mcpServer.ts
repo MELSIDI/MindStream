@@ -4,7 +4,7 @@ import {
   StartLiveSessionParams,
   WriteLiveBlockParams,
 } from '../bridge/LiveAgentSessionDriver';
-import { SpeedMode } from '../types/session';
+import { LanguageSetting, SpeedMode } from '../types/session';
 import { BridgeClient } from './bridgeClient';
 import { StandaloneFallback } from './standaloneFallback';
 
@@ -27,8 +27,9 @@ const MCP_TOOLS = [
         goal: { type: 'string', description: 'User feature or task goal.' },
         language: {
           type: 'string',
-          enum: ['fr', 'en'],
-          description: 'Language matching the user prompt.',
+          enum: ['auto', 'fr', 'en'],
+          description:
+            'Language matching the user prompt ("fr", "en", or "auto" to auto-detect from prompt/goal).',
         },
         workspaceRoot: {
           type: 'string',
@@ -74,6 +75,11 @@ const MCP_TOOLS = [
         },
         workspaceRoot: { type: 'string' },
         languageId: { type: 'string' },
+        language: {
+          type: 'string',
+          enum: ['auto', 'fr', 'en'],
+          description: 'Optional spoken narration language override ("auto", "fr", or "en").',
+        },
         title: { type: 'string', description: 'Short block label shown in status bar.' },
         category: {
           type: 'string',
@@ -167,6 +173,11 @@ const MCP_TOOLS = [
       type: 'object',
       properties: {
         text: { type: 'string' },
+        language: {
+          type: 'string',
+          enum: ['auto', 'fr', 'en'],
+          description: 'Spoken language ("auto", "fr", or "en"). Defaults to intelligent auto-detection.',
+        },
         waitForCompletion: { type: 'boolean' },
         workspaceRoot: { type: 'string' },
       },
@@ -442,6 +453,9 @@ export class MindStreamMcpServer {
         return this.standalone.speak(
           String(args.text ?? ''),
           typeof args.waitForCompletion === 'boolean' ? args.waitForCompletion : true,
+          args.language === 'auto' || args.language === 'fr' || args.language === 'en'
+            ? (args.language as LanguageSetting)
+            : undefined,
         );
       }
 

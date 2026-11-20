@@ -10,8 +10,15 @@ import {
   findContainerInsertionPoint,
   normalizeLineEndings,
 } from '../editor/ContainerLocator';
+import { splitSentences } from '../engine/SentenceSplitter';
 import { computeChunkDelayMs, computePace } from '../engine/SmartPacer';
 import { CodeBlock, SpeedMode } from '../types/session';
+import {
+  KokoroSpeakSentenceItem,
+  KokoroTTSService,
+  resolveKokoroVoiceForLanguage,
+} from '../voice/KokoroTTSService';
+import { detectLanguage, resolveUtteranceLanguage } from '../voice/LanguageDetector';
 import { NativeTTSFallback } from '../voice/NativeTTSFallback';
 
 function sleep(ms: number): Promise<void> {
@@ -20,9 +27,11 @@ function sleep(ms: number): Promise<void> {
 
 /**
  * Headless / CLI fallback when no IDE MindStream Extension bridge is active.
- * Writes files progressively to disk and narrates via OS native TTS.
+ * Writes files progressively to disk and narrates via local Kokoro-82M (if installed)
+ * with seamless fallback to OS native TTS.
  */
 export class StandaloneFallback {
+  private readonly kokoro = new KokoroTTSService();
   private readonly tts = new NativeTTSFallback();
   private speedMode: SpeedMode = '1x';
   private muted = false;
@@ -32,17 +41,29 @@ export class StandaloneFallback {
   private fileFastTarget: string | null = null;
 
   public async startSession(params: StartLiveSessionParams): Promise<Record<string, unknown>> {
-    this.language = params.language ?? 'fr';
+    const contextText = [
+      params.goal,
+      params.title,
+      params.spokenIntro ?? '',
+      params.researchSummary ?? '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+    this.language =
+      params.language === 'fr' || params.language === 'en'
+        ? params.language
+        : detectLanguage(contextText, this.language).language;
     this.workspaceRoot = params.workspaceRoot || process.cwd();
     this.fileFastTarget = null;
 
     if (params.spokenIntro && !this.muted) {
-      await this.tts.speak(params.spokenIntro, this.language, 1.0);
+      await this.speakWithLocalAutoLang(params.spokenIntro, 1.0, this.language);
     }
 
     return {
       ok: true,
       bridgeMode: 'standalone',
+      language: this.language,
       speedMode: this.speedMode,
       muted: this.muted,
     };
@@ -123,15 +144,19 @@ export class StandaloneFallback {
     const pace = computePace(this.speedMode, block, 1.0, isFileFast, this.language);
     this.activeFilePath = params.filePath;
 
+    const spokenText =
+      pace.narrationMode === 'short'
+        ? block.shortCue || params.narration
+        : params.narration;
+
+    const blockBaseLang =
+      params.language === 'fr' || params.language === 'en'
+        ? params.language
+        : this.language;
+
     const speechPromise =
       !this.muted && pace.narrationMode !== 'silent'
-        ? this.tts.speak(
-            pace.narrationMode === 'short'
-              ? block.shortCue || params.narration
-              : params.narration,
-            this.language,
-            pace.speechRate,
-          )
+        ? this.speakWithLocalAutoLang(spokenText, pace.speechRate, blockBaseLang)
         : Promise.resolve();
 
     let written = '';
@@ -169,9 +194,17 @@ export class StandaloneFallback {
     };
   }
 
-  public async speak(text: string, waitForCompletion = true): Promise<Record<string, unknown>> {
+  public async speak(
+    text: string,
+    waitForCompletion = true,
+    language?: 'auto' | 'fr' | 'en',
+  ): Promise<Record<string, unknown>> {
     if (!this.muted && text.trim()) {
-      const p = this.tts.speak(text, this.language, 1.0);
+      const baseLang =
+        language === 'fr' || language === 'en'
+          ? language
+          : detectLanguage(text, this.language).language;
+      const p = this.speakWithLocalAutoLang(text, 1.0, baseLang);
       if (waitForCompletion) {
         await p;
       }
@@ -187,12 +220,14 @@ export class StandaloneFallback {
       this.speedMode = opts.speed;
     } else if (action === 'mute') {
       this.muted = true;
+      this.kokoro.stop();
       this.tts.stop();
     } else if (action === 'unmute') {
       this.muted = false;
     } else if (action === 'file_fast_pause') {
       this.fileFastTarget = opts?.filePath ?? this.activeFilePath;
     } else if (action === 'stop') {
+      this.kokoro.stop();
       this.tts.stop();
       this.fileFastTarget = null;
     }
@@ -207,12 +242,45 @@ export class StandaloneFallback {
 
   public async finishSession(spokenOutro?: string): Promise<Record<string, unknown>> {
     if (spokenOutro && !this.muted) {
-      await this.tts.speak(spokenOutro, this.language, 1.0);
+      await this.speakWithLocalAutoLang(spokenOutro, 1.0, this.language);
     }
     return { ok: true, bridgeMode: 'standalone' };
   }
 
   public dispose(): void {
+    this.kokoro.dispose();
     this.tts.dispose();
+  }
+
+  private async speakWithLocalAutoLang(
+    text: string,
+    rate: number,
+    baseLang: 'fr' | 'en',
+  ): Promise<void> {
+    const sentences = splitSentences(text);
+    if (sentences.length === 0) {
+      return;
+    }
+
+    const items: KokoroSpeakSentenceItem[] = sentences.map((sentence) => {
+      const lang = resolveUtteranceLanguage(sentence, baseLang, true);
+      return {
+        text: sentence,
+        lang,
+        voice: resolveKokoroVoiceForLanguage(lang),
+        rate,
+      };
+    });
+
+    if (this.kokoro.isAvailable()) {
+      const ok = await this.kokoro.speakSentences(items, 0);
+      if (ok) {
+        return;
+      }
+    }
+
+    for (const item of items) {
+      await this.tts.speak(item.text, item.lang, rate);
+    }
   }
 }

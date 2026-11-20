@@ -6,3 +6,4 @@ out/
 mindstream-demo/
 coverage/
 agent-plugin/mcp/mcp-server.js
+agent-plugin/mcp/kokoro_worker.py

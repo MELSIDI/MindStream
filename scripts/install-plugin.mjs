@@ -36,6 +36,7 @@ async function main() {
   console.log('  - plugin.json');
   console.log('  - mcp_config.json (registers stdio MCP server `mindstream-driver`)');
   console.log('  - mcp/mcp-server.js');
+  console.log('  - mcp/kokoro_worker.py (local Kokoro-82M FR/EN voice worker)');
   console.log('  - rules/AGENTS.md (always-on `/MindStream` trigger)');
   console.log('  - skills/mindstream/SKILL.md');
   console.log('  - assets/logo.svg');

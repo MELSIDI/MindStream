@@ -6,6 +6,7 @@ import {
   EffectivePaceInfo,
   FileStep,
   FileStopTarget,
+  LanguageSetting,
   LiveContextSnapshot,
   PlaybackState,
   SessionStep,
@@ -15,6 +16,7 @@ import {
   TimelineStepSummary,
   VoiceOptionInfo,
 } from '../types/session';
+import { detectLanguage } from '../voice/LanguageDetector';
 import { splitSentences } from './SentenceSplitter';
 import { classifyImportance, computeChunkDelayMs, computePace, SPEED_ORDER } from './SmartPacer';
 
@@ -73,6 +75,7 @@ export interface IVoiceAdapter {
   getBackendLabel(): string;
   getAvailableVoices(): VoiceOptionInfo[];
   getSelectedVoiceId(): string | null;
+  warmup?(): void;
 }
 
 export interface IQuestionResponder {
@@ -86,6 +89,7 @@ export interface IQuestionResponder {
 
 export interface PlaybackEngineConfig {
   language: 'fr' | 'en';
+  languageMode?: LanguageSetting;
   defaultSpeed: SpeedMode;
   voiceRateMultiplier: number;
   autoResearchIntro: boolean;
@@ -265,6 +269,7 @@ export class PlaybackEngine {
     this.pauseBanner = null;
     this.activeSnapshot = null;
     this.playbackState = 'playing';
+    this.voice.warmup?.();
     this.emitState();
 
     if (wasPlanReady && this.config.autoResearchIntro && !this.muted && this.plan.research.spokenIntro) {
@@ -458,13 +463,15 @@ export class PlaybackEngine {
     this.isAnsweringQuestion = true;
     this.emitState();
 
+    const questionLang = detectLanguage(cleanQuestion, this.config.language).language;
+
     let answer = '';
     try {
       answer = await this.questionResponder.answerQuestion(cleanQuestion, snapshot, this.plan);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       answer =
-        this.config.language === 'fr'
+        questionLang === 'fr'
           ? `Je n'ai pas pu contacter le modèle IA (${msg}), mais sur ${snapshot.filePath} ligne ${snapshot.lineNumber} : ${snapshot.blockRationale}`
           : `Could not reach the AI provider (${msg}), however on ${snapshot.filePath} line ${snapshot.lineNumber}: ${snapshot.blockRationale}`;
     }
@@ -485,11 +492,13 @@ export class PlaybackEngine {
 
     if (!this.muted && this.playbackState === 'interrupted') {
       const qaAbort = this.createRunSignal();
+      const answerLang = detectLanguage(answer, questionLang).language;
       await this.speakSafe(
         answer,
         1.05 * this.config.voiceRateMultiplier,
         qaAbort.signal,
         0,
+        answerLang,
       );
     }
 
@@ -952,6 +961,7 @@ export class PlaybackEngine {
     rate: number,
     signal: AbortSignal,
     startSentenceIndex: number,
+    langOverride?: 'fr' | 'en',
   ): Promise<void> {
     if (!text.trim() || this.muted || signal.aborted) {
       return;
@@ -959,7 +969,7 @@ export class PlaybackEngine {
 
     try {
       await this.voice.speakSentences(text, {
-        lang: this.config.language,
+        lang: langOverride ?? this.config.language,
         rate,
         startSentenceIndex,
         signal,

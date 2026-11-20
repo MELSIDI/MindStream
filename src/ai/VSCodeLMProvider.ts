@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { CodingSessionPlan, LiveContextSnapshot } from '../types/session';
+import { detectLanguage } from '../voice/LanguageDetector';
 import {
   AIProvider,
   extractJsonObject,
@@ -76,7 +77,8 @@ export class VSCodeLMProvider implements AIProvider {
     plan: CodingSessionPlan,
     customOptionHint?: string,
   ): Promise<string> {
-    const prompt = `${buildBargeInSystemPrompt(plan.language)}\n\n${buildBargeInUserPrompt(question, snapshot, plan, customOptionHint)}`;
+    const answerLang = detectLanguage(question, plan.language).language;
+    const prompt = `${buildBargeInSystemPrompt(answerLang)}\n\n${buildBargeInUserPrompt(question, snapshot, plan, customOptionHint)}`;
     return (await this.sendPrompt(prompt)).trim();
   }
 

@@ -10,6 +10,7 @@ import {
   CodeBlock,
   EffectivePaceInfo,
   FileStopTarget,
+  LanguageSetting,
   LiveContextSnapshot,
   PlaybackState,
   ResearchReport,
@@ -19,6 +20,7 @@ import {
   TimelineBlockSummary,
   TimelineStepSummary,
 } from '../types/session';
+import { detectLanguage, resolveEffectiveLanguage } from '../voice/LanguageDetector';
 
 export interface ILiveEditorAdapter extends IEditorAdapter {
   openFile(
@@ -44,7 +46,7 @@ export interface ILiveEditorAdapter extends IEditorAdapter {
 export interface StartLiveSessionParams {
   title: string;
   goal: string;
-  language?: 'fr' | 'en';
+  language?: LanguageSetting;
   workspaceRoot?: string;
   researchSummary?: string;
   findings?: string[];
@@ -57,6 +59,7 @@ export interface WriteLiveBlockParams {
   filePath: string;
   workspaceRoot?: string;
   languageId?: string;
+  language?: LanguageSetting;
   title: string;
   category?: BlockCategory;
   importance?: BlockImportance;
@@ -82,6 +85,7 @@ export interface WriteLiveBlockResult {
   muted: boolean;
   fileFastActive: boolean;
   question?: string;
+  detectedLanguage?: 'fr' | 'en';
   currentLineText?: string;
   surroundingLines?: string;
   codeWrittenSoFar?: string;
@@ -112,6 +116,7 @@ export interface LiveCheckpointResult {
 
 export interface LiveDriverConfig {
   language: 'fr' | 'en';
+  languageMode?: LanguageSetting;
   defaultSpeed: SpeedMode;
   voiceRateMultiplier: number;
   providerLabel: string;
@@ -243,12 +248,28 @@ export class LiveAgentSessionDriver {
 
   public async startSession(params: StartLiveSessionParams): Promise<{
     ok: boolean;
+    language: 'fr' | 'en';
     speedMode: SpeedMode;
     muted: boolean;
   }> {
     this.stop();
 
-    const lang = params.language ?? this.config.language;
+    const contextText = [
+      params.goal,
+      params.title,
+      params.spokenIntro ?? '',
+      params.researchSummary ?? '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+    const lang =
+      params.language === 'fr' || params.language === 'en'
+        ? params.language
+        : resolveEffectiveLanguage(
+            this.config.languageMode ?? 'auto',
+            contextText,
+            this.config.language,
+          );
     this.config.language = lang;
     this.sessionTitle = params.title || 'MindStream Session';
     this.sessionGoal = params.goal || '';
@@ -278,6 +299,7 @@ export class LiveAgentSessionDriver {
     this.bargeInHistory = [];
     this.pauseBanner = null;
     this.fileStopTarget = null;
+    this.voice.warmup?.();
     this.emitState();
 
     if (params.spokenIntro && !this.muted) {
@@ -287,11 +309,13 @@ export class LiveAgentSessionDriver {
         1.0 * this.config.voiceRateMultiplier,
         ctrl.signal,
         0,
+        lang,
       );
     }
 
     return {
       ok: true,
+      language: lang,
       speedMode: this.speedMode,
       muted: this.muted,
     };
@@ -383,6 +407,7 @@ export class LiveAgentSessionDriver {
       if (this.pendingOutcome === 'interrupted') {
         const snapshot = this.activeSnapshot ?? (await this.captureSnapshot(params.filePath, block));
         const question = this.pendingInterruptQuestion ?? '';
+        const detectedLanguage = detectLanguage(question, this.config.language).language;
         this.pendingOutcome = null;
         this.pendingInterruptQuestion = null;
         return {
@@ -393,13 +418,14 @@ export class LiveAgentSessionDriver {
           muted: this.muted,
           fileFastActive: this.isFileFastActive(params.filePath),
           question,
+          detectedLanguage,
           currentLineText: snapshot.currentLineText,
           surroundingLines: snapshot.surroundingLines,
           codeWrittenSoFar: snapshot.codeWrittenSoFar,
           remainingCode: snapshot.remainingCode,
           currentSentence: snapshot.currentSentence,
           instruction:
-            'Answer the user question concisely grounded on the exact line and context above (call mindstream_speak if voice is unmuted), wait for their green light if appropriate, then continue with remainingCode using append mode.',
+            `Answer the user question concisely in ${detectedLanguage === 'fr' ? 'French' : 'English'} grounded on the exact line and context above (call mindstream_speak with language="${detectedLanguage}" if voice is unmuted), wait for their green light if appropriate, then continue with remainingCode using append mode.`,
         };
       }
 
@@ -431,6 +457,14 @@ export class LiveAgentSessionDriver {
       );
 
       const narrationText = this.selectNarrationText(block, initialPace.narrationMode);
+      const blockLang =
+        params.language === 'fr' || params.language === 'en'
+          ? params.language
+          : resolveEffectiveLanguage(
+              this.config.languageMode ?? 'auto',
+              narrationText,
+              this.config.language,
+            );
       const speechPromise =
         narrationText && !this.muted
           ? this.speakSafe(
@@ -438,6 +472,7 @@ export class LiveAgentSessionDriver {
               initialPace.speechRate,
               signal,
               this.sentenceIndex,
+              blockLang,
             )
           : Promise.resolve();
 
@@ -582,17 +617,32 @@ export class LiveAgentSessionDriver {
     });
   }
 
-  public async speak(text: string, waitForCompletion = true): Promise<{ ok: boolean; muted: boolean }> {
+  public async speak(
+    text: string,
+    waitForCompletion = true,
+    language?: LanguageSetting,
+  ): Promise<{ ok: boolean; muted: boolean; language: 'fr' | 'en' }> {
+    const resolvedLang =
+      language === 'fr' || language === 'en'
+        ? language
+        : detectLanguage(text, this.config.language).language;
+
     if (!text.trim() || this.muted) {
-      return { ok: true, muted: this.muted };
+      return { ok: true, muted: this.muted, language: resolvedLang };
     }
 
     const signal = this.createRunAbort().signal;
-    const p = this.speakSafe(text, 1.02 * this.config.voiceRateMultiplier, signal, 0);
+    const p = this.speakSafe(
+      text,
+      1.02 * this.config.voiceRateMultiplier,
+      signal,
+      0,
+      resolvedLang,
+    );
     if (waitForCompletion) {
       await p;
     }
-    return { ok: true, muted: this.muted };
+    return { ok: true, muted: this.muted, language: resolvedLang };
   }
 
   public async finishSession(
@@ -1021,13 +1071,14 @@ export class LiveAgentSessionDriver {
     rate: number,
     signal: AbortSignal,
     startSentenceIndex: number,
+    langOverride?: 'fr' | 'en',
   ): Promise<void> {
     if (!text.trim() || this.muted || signal.aborted) {
       return;
     }
     try {
       await this.voice.speakSentences(text, {
-        lang: this.config.language,
+        lang: langOverride ?? this.config.language,
         rate,
         startSentenceIndex,
         signal,

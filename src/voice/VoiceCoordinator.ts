@@ -2,9 +2,17 @@ import { IVoiceAdapter, SpeakOptions } from '../engine/PlaybackEngine';
 import { estimateSpeechDurationMs, splitSentences } from '../engine/SentenceSplitter';
 import { ExtensionToWebviewMessage, VoiceOptionInfo } from '../types/session';
 import { GeminiTTSService } from './GeminiTTSService';
+import {
+  KOKORO_VOICES_CATALOG,
+  KokoroDevice,
+  KokoroSpeakSentenceItem,
+  KokoroTTSService,
+  resolveKokoroVoiceForLanguage,
+} from './KokoroTTSService';
+import { resolveUtteranceLanguage } from './LanguageDetector';
 import { NativeTTSFallback } from './NativeTTSFallback';
 
-export type TTSProviderSetting = 'auto' | 'webspeech' | 'native' | 'gemini';
+export type TTSProviderSetting = 'auto' | 'kokoro' | 'webspeech' | 'native' | 'gemini';
 
 interface PendingUtterance {
   resolve: () => void;
@@ -22,12 +30,26 @@ export class VoiceCoordinator implements IVoiceAdapter {
   private ttsProvider: TTSProviderSetting = 'auto';
   private geminiApiKey: string | null = null;
   private geminiVoice = 'Kore';
+  private kokoroVoiceFr = 'ff_siwis';
+  private kokoroVoiceEn = 'af_heart';
+  private autoDetectSpeechLanguage = true;
 
-  private readonly nativeTTS = new NativeTTSFallback();
-  private readonly geminiTTS = new GeminiTTSService();
+  private readonly kokoroTTS: KokoroTTSService;
+  private readonly nativeTTS: NativeTTSFallback;
+  private readonly geminiTTS: GeminiTTSService;
   private readonly pendingUtterances = new Map<string, PendingUtterance>();
   private utteranceCounter = 0;
   private onMetadataChanged: (() => void) | null = null;
+
+  constructor(deps?: {
+    kokoroTTS?: KokoroTTSService;
+    nativeTTS?: NativeTTSFallback;
+    geminiTTS?: GeminiTTSService;
+  }) {
+    this.kokoroTTS = deps?.kokoroTTS ?? new KokoroTTSService();
+    this.nativeTTS = deps?.nativeTTS ?? new NativeTTSFallback();
+    this.geminiTTS = deps?.geminiTTS ?? new GeminiTTSService();
+  }
 
   public attachWebview(sender: (msg: ExtensionToWebviewMessage) => void): void {
     this.webviewSender = sender;
@@ -42,10 +64,32 @@ export class VoiceCoordinator implements IVoiceAdapter {
     this.onMetadataChanged = cb;
   }
 
+  public isKokoroAvailable(): boolean {
+    return this.kokoroTTS.isAvailable();
+  }
+
+  public refreshKokoroAvailability(): boolean {
+    const ok = this.kokoroTTS.refreshAvailability();
+    this.onMetadataChanged?.();
+    return ok;
+  }
+
+  public warmup(): void {
+    const backend = this.resolveBackend();
+    if (backend === 'kokoro') {
+      this.kokoroTTS.warmup();
+    }
+  }
+
   public updateSettings(opts: {
     ttsProvider?: TTSProviderSetting;
     geminiApiKey?: string | null;
     geminiVoice?: string;
+    kokoroVoiceFr?: string;
+    kokoroVoiceEn?: string;
+    kokoroPythonPath?: string;
+    kokoroDevice?: KokoroDevice;
+    autoDetectSpeechLanguage?: boolean;
   }): void {
     if (opts.ttsProvider !== undefined) {
       this.ttsProvider = opts.ttsProvider;
@@ -56,12 +100,35 @@ export class VoiceCoordinator implements IVoiceAdapter {
     if (opts.geminiVoice !== undefined) {
       this.geminiVoice = opts.geminiVoice;
     }
+    if (opts.kokoroVoiceFr !== undefined && opts.kokoroVoiceFr.trim()) {
+      this.kokoroVoiceFr = opts.kokoroVoiceFr.trim();
+    }
+    if (opts.kokoroVoiceEn !== undefined && opts.kokoroVoiceEn.trim()) {
+      this.kokoroVoiceEn = opts.kokoroVoiceEn.trim();
+    }
+    if (opts.autoDetectSpeechLanguage !== undefined) {
+      this.autoDetectSpeechLanguage = opts.autoDetectSpeechLanguage;
+    }
+
+    this.kokoroTTS.updateConfig({
+      pythonPath: opts.kokoroPythonPath,
+      device: opts.kokoroDevice,
+      voiceFr: this.kokoroVoiceFr,
+      voiceEn: this.kokoroVoiceEn,
+    });
+
     this.onMetadataChanged?.();
   }
 
   public handleWebviewVoices(voices: VoiceOptionInfo[]): void {
     this.webviewVoices = voices;
-    if (this.selectedVoiceId && !voices.some((v) => v.id === this.selectedVoiceId)) {
+    if (
+      this.selectedVoiceId &&
+      !this.selectedVoiceId.startsWith('kokoro') &&
+      this.selectedVoiceId !== 'native-os' &&
+      !this.selectedVoiceId.startsWith('gemini-') &&
+      !voices.some((v) => v.id === this.selectedVoiceId)
+    ) {
       this.selectedVoiceId = null;
     }
     this.onMetadataChanged?.();
@@ -77,7 +144,27 @@ export class VoiceCoordinator implements IVoiceAdapter {
   }
 
   public getAvailableVoices(): VoiceOptionInfo[] {
-    const list: VoiceOptionInfo[] = [...this.webviewVoices];
+    const list: VoiceOptionInfo[] = [];
+
+    if (this.kokoroTTS.isAvailable()) {
+      list.push({
+        id: 'kokoro-auto',
+        name: 'Kokoro-82M Local (Auto FR / EN)',
+        lang: 'multi',
+        source: 'kokoro',
+      });
+      for (const v of KOKORO_VOICES_CATALOG) {
+        list.push({
+          id: v.id,
+          name: v.name,
+          lang: v.lang,
+          source: 'kokoro',
+        });
+      }
+    }
+
+    list.push(...this.webviewVoices);
+
     if (this.nativeTTS.isAvailable()) {
       list.push({
         id: 'native-os',
@@ -104,6 +191,12 @@ export class VoiceCoordinator implements IVoiceAdapter {
 
   public getBackendLabel(): string {
     const resolved = this.resolveBackend();
+    if (resolved === 'kokoro') {
+      if (this.selectedVoiceId?.startsWith('kokoro:')) {
+        return `Kokoro-82M (${this.selectedVoiceId.slice(7)})`;
+      }
+      return 'Kokoro-82M Local (Auto FR/EN)';
+    }
     if (resolved === 'gemini') {
       return `Gemini 3.8 TTS (${this.geminiVoice})`;
     }
@@ -140,6 +233,7 @@ export class VoiceCoordinator implements IVoiceAdapter {
   }
 
   public stopImmediately(): void {
+    this.kokoroTTS.stop();
     this.nativeTTS.stop();
     if (this.webviewSender && this.webviewReady) {
       this.webviewSender({ type: 'ttsStop' });
@@ -153,6 +247,7 @@ export class VoiceCoordinator implements IVoiceAdapter {
 
   public dispose(): void {
     this.stopImmediately();
+    this.kokoroTTS.dispose();
     this.nativeTTS.dispose();
   }
 
@@ -167,14 +262,62 @@ export class VoiceCoordinator implements IVoiceAdapter {
       sentences.length - 1,
     );
 
-    for (let i = startIdx; i < sentences.length; i++) {
+    const resolvedSentences = sentences.map((sentence) => ({
+      text: sentence,
+      lang: resolveUtteranceLanguage(sentence, options.lang, this.autoDetectSpeechLanguage),
+    }));
+
+    let resumeIdx = startIdx;
+    const backend = this.resolveBackend();
+
+    if (backend === 'kokoro') {
+      const explicitVoice =
+        this.selectedVoiceId && this.selectedVoiceId.startsWith('kokoro:')
+          ? this.selectedVoiceId.slice(7)
+          : undefined;
+
+      const kokoroItems: KokoroSpeakSentenceItem[] = resolvedSentences.map((item) => ({
+        text: item.text,
+        lang: item.lang,
+        voice: resolveKokoroVoiceForLanguage(
+          item.lang,
+          explicitVoice,
+          this.kokoroVoiceFr,
+          this.kokoroVoiceEn,
+        ),
+        rate: options.rate,
+      }));
+
+      let lastStartedIdx = startIdx;
+      const handled = await this.kokoroTTS.speakSentences(
+        kokoroItems,
+        startIdx,
+        {
+          onSentenceStart: (idx, sentenceText, total) => {
+            lastStartedIdx = idx;
+            options.onSentenceStart?.(idx, sentenceText, total);
+          },
+        },
+        options.signal,
+      );
+
+      if (handled || options.signal?.aborted) {
+        return;
+      }
+
+      resumeIdx = lastStartedIdx;
+    }
+
+    const fallbackBackend = backend === 'kokoro' ? this.resolveNonKokoroFallback() : backend;
+
+    for (let i = resumeIdx; i < resolvedSentences.length; i++) {
       if (options.signal?.aborted) {
         return;
       }
 
-      const sentence = sentences[i];
-      options.onSentenceStart?.(i, sentence, sentences.length);
-      await this.speakSingleSentence(sentence, options);
+      const item = resolvedSentences[i];
+      options.onSentenceStart?.(i, item.text, resolvedSentences.length);
+      await this.speakSingleSentence(item.text, { ...options, lang: item.lang }, fallbackBackend);
 
       if (options.signal?.aborted) {
         return;
@@ -185,9 +328,8 @@ export class VoiceCoordinator implements IVoiceAdapter {
   private async speakSingleSentence(
     sentence: string,
     options: SpeakOptions,
+    backend: 'gemini' | 'webspeech' | 'native',
   ): Promise<void> {
-    const backend = this.resolveBackend();
-
     if (backend === 'gemini' && this.geminiApiKey && this.webviewSender && this.webviewReady) {
       try {
         const audio = await this.geminiTTS.synthesize(
@@ -214,12 +356,31 @@ export class VoiceCoordinator implements IVoiceAdapter {
     await this.nativeTTS.speak(sentence, options.lang, options.rate, options.signal);
   }
 
-  private resolveBackend(): 'gemini' | 'webspeech' | 'native' {
+  private resolveNonKokoroFallback(): 'gemini' | 'webspeech' | 'native' {
+    if (this.ttsProvider === 'gemini' && this.geminiApiKey && this.webviewReady) {
+      return 'gemini';
+    }
+    if (this.webviewReady && this.webviewSender && this.webviewVoices.length > 0) {
+      return 'webspeech';
+    }
+    return 'native';
+  }
+
+  private resolveBackend(): 'kokoro' | 'gemini' | 'webspeech' | 'native' {
     if (this.selectedVoiceId === 'native-os') {
       return 'native';
     }
+    if (
+      (this.selectedVoiceId === 'kokoro-auto' || this.selectedVoiceId?.startsWith('kokoro:')) &&
+      this.kokoroTTS.isAvailable()
+    ) {
+      return 'kokoro';
+    }
     if (this.selectedVoiceId?.startsWith('gemini-') && this.geminiApiKey && this.webviewReady) {
       return 'gemini';
+    }
+    if (this.ttsProvider === 'kokoro') {
+      return this.kokoroTTS.isAvailable() ? 'kokoro' : this.resolveNonKokoroFallback();
     }
     if (this.ttsProvider === 'native') {
       return 'native';
@@ -229,6 +390,10 @@ export class VoiceCoordinator implements IVoiceAdapter {
     }
     if (this.ttsProvider === 'webspeech' && this.webviewReady && this.webviewSender) {
       return 'webspeech';
+    }
+
+    if (this.kokoroTTS.isAvailable()) {
+      return 'kokoro';
     }
     if (this.webviewReady && this.webviewSender && this.webviewVoices.length > 0) {
       return 'webspeech';
@@ -282,6 +447,7 @@ export class VoiceCoordinator implements IVoiceAdapter {
         rate: options.rate,
         voiceId:
           this.selectedVoiceId &&
+          !this.selectedVoiceId.startsWith('kokoro') &&
           this.selectedVoiceId !== 'native-os' &&
           !this.selectedVoiceId.startsWith('gemini-')
             ? this.selectedVoiceId

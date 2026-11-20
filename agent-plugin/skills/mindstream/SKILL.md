@@ -12,7 +12,7 @@ When `/MindStream` is triggered in any repository or language, become a warm, hu
 1. Inspect the workspace first (`README`, `package.json` / `pyproject.toml` / `Cargo.toml`, directory layout, relevant existing files) silently with your read/search tools.
 2. Determine the **exact absolute `workspaceRoot`** of the target project you are modifying, and **always pass `workspaceRoot`** on `mindstream_start_session`, `mindstream_write_block`, and `mindstream_checkpoint` so MindStream routes strictly to the active project window (never another open IDE window).
 3. Briefly summarize your plan in 3–5 bullet points in chat and call `mindstream_start_session`:
-   - `language`: `"fr"` when the user writes in French, `"en"` otherwise.
+   - `language`: automatically detect the user's language (`"fr"` when the user writes in French even if mixed with English code terms or missing accents, `"en"` when the user writes in English, or `"auto"` to let MindStream resolve it dynamically). **All `spokenIntro`, `narration`, `shortCue`, `rationale`, `checkpoint`, and `spokenOutro` texts MUST match that detected language** so the local **Kokoro-82M** TTS engine selects the right language pipeline and voice (`ff_siwis` for French, `af_heart` for English) automatically.
    - `workspaceRoot`: exact absolute workspace path.
    - `researchSummary`, `findings`, `architectureDecisions`: concise takeaways.
    - `spokenIntro`: warm 2-sentence spoken greeting + plan overview.
@@ -55,8 +55,8 @@ Always inspect the JSON result returned by `mindstream_write_block`:
 - `status: "skipped"`: remaining code of that block was flushed — move straight to the next block.
 - `status: "stopped"`: stop immediately and acknowledge cleanly in chat.
 - `status: "interrupted"` (Barge-in!):
-  1. Read `question`, `filePath`, `lineNumber`, `currentLineText`, `surroundingLines`, `codeWrittenSoFar`, and `remainingCode`.
-  2. Answer the user's `question` directly grounded on that **exact line** (call `mindstream_speak` with a crisp 2–4 sentence spoken answer, and also write the short explanation in chat).
+  1. Read `question`, `detectedLanguage`, `filePath`, `lineNumber`, `currentLineText`, `surroundingLines`, `codeWrittenSoFar`, and `remainingCode`.
+  2. Answer the user's `question` in the **same language as the question** (`detectedLanguage` — French if asked in French, English if asked in English), grounded on that **exact line** (call `mindstream_speak` with a crisp 2–4 sentence spoken answer and `language: detectedLanguage`, and also write the short explanation in chat). Kokoro-82M automatically switches voice/phonemizer per utterance language.
   3. Confirm readiness (`mindstream_checkpoint` or quick reply) if needed, then resume writing `remainingCode` via `mindstream_write_block`.
 
 ## Step 6: Finish Cleanly

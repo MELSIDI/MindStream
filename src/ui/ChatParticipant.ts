@@ -43,6 +43,7 @@ export function registerMindStreamChatParticipant(
   liveDriver: LiveAgentSessionDriver,
   handlers: {
     getLanguage: () => 'fr' | 'en';
+    resolvePromptLanguage?: (prompt: string) => 'fr' | 'en';
     onDemo: () => Promise<void>;
     onPause: () => void;
     onResume: () => Promise<void>;
@@ -143,14 +144,18 @@ export function registerMindStreamChatParticipant(
         return;
       }
 
+      const effectiveLang = handlers.resolvePromptLanguage
+        ? handlers.resolvePromptLanguage(promptTrimmed)
+        : lang;
+
       stream.markdown(
-        lang === 'fr'
+        effectiveLang === 'fr'
           ? '🔍 Analyse du projet et préparation du plan MindStream…\n\n'
           : '🔍 Researching workspace and building MindStream plan…\n\n',
       );
 
       const wsCtx = await analyzer.analyze(promptTrimmed);
-      const fullPrompt = `${buildPlanGenerationSystemPrompt(lang)}\n\n${buildPlanGenerationUserPrompt(promptTrimmed, wsCtx, lang)}`;
+      const fullPrompt = `${buildPlanGenerationSystemPrompt(effectiveLang)}\n\n${buildPlanGenerationUserPrompt(promptTrimmed, wsCtx, effectiveLang)}`;
 
       const msgBuilder = (
         vscode as unknown as {
@@ -169,14 +174,14 @@ export function registerMindStreamChatParticipant(
         raw += chunk;
       }
 
-      const plan = validateAndNormalizePlan(extractJsonObject(raw), promptTrimmed, lang);
+      const plan = validateAndNormalizePlan(extractJsonObject(raw), promptTrimmed, effectiveLang);
       const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
 
       stream.markdown(`**${plan.title}**\n\n${plan.research.summary}\n`);
       await liveDriver.startSession({
         title: plan.title,
         goal: plan.goal,
-        language: lang,
+        language: effectiveLang,
         workspaceRoot,
         researchSummary: plan.research.summary,
         findings: plan.research.findings,
@@ -244,10 +249,12 @@ export function registerMindStreamChatParticipant(
       }
 
       await liveDriver.finishSession(
-        lang === 'fr' ? 'Implémentation terminée.' : 'Implementation complete.',
+        effectiveLang === 'fr' ? 'Implémentation terminée.' : 'Implementation complete.',
       );
       stream.markdown(
-        lang === 'fr' ? '\n✅ Session MindStream terminée.' : '\n✅ MindStream session finished.',
+        effectiveLang === 'fr'
+          ? '\n✅ Session MindStream terminée.'
+          : '\n✅ MindStream session finished.',
       );
     },
   );
