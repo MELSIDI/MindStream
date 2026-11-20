@@ -78,6 +78,8 @@ Extension IDE MindStream (`dist/extension.js`)
 
 ## Licence
 
-Ce projet est open source, distribué sous licence **Apache-2.0** — voir les fichiers [LICENSE](LICENSE) et [NOTICE](NOTICE) pour plus de détails.
+Ce projet (**MindStream**) est open source, distribué sous licence **MIT** — voir le fichier [LICENSE](LICENSE) pour plus de détails.
 
-La synthèse vocale locale s'appuie sur **Kokoro-82M** ([hexgrad/kokoro](https://github.com/hexgrad/kokoro) / [hexgrad/Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M)), également distribué sous licence **Apache-2.0** (installé localement à la demande dans `~/.mindstream/kokoro-venv` avec ses dépendances Python tierces).
+### Transparence sur les composants vocaux tiers (optionnels)
+- Le moteur vocal local optionnel **Kokoro / Kokoro-82M** ([hexgrad/kokoro](https://github.com/hexgrad/kokoro) · [hexgrad/Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M)) est distribué sous licence **Apache-2.0**.
+- Il n'est pas embarqué dans ce dépôt : `npm run setup:kokoro` l'installe localement à la demande dans `~/.mindstream/kokoro-venv` avec ses dépendances Python/G2P sous leurs licences respectives — voir [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

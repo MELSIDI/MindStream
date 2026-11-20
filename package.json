@@ -4,7 +4,7 @@
   "description": "Transforme l'agent IA en binôme de Pair-Programming humain qui code à votre rythme en expliquant chaque choix à voix haute avec pause, variateur de vitesse, barge-in vocal et mode démo intégré.",
   "version": "0.2.1",
   "publisher": "mindstream",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "keywords": [
     "ai",
     "pair-programming",
